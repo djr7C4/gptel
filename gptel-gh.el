@@ -48,7 +48,7 @@
      :cutoff-date "2023-09")
     (gpt-5-mini
      :description "Faster, more cost-efficient version of GPT-5"
-     :capabilities (media tool-use json url response-api)
+     :capabilities (media tool-use json url responses-api)
      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
      :context-window 128
      :input-cost 0
@@ -56,7 +56,7 @@
      :cutoff-date "2024-06")
     (gpt-5.1
      :description "The best model for coding and agentic tasks"
-     :capabilities (media tool-use json url response-api)
+     :capabilities (media tool-use json url responses-api)
      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
      :context-window 128
      :input-cost 1
@@ -64,7 +64,7 @@
      :cutoff-date "2024-09")
     (gpt-5.1-codex
      :description "Flagship model for coding, reasoning, and agentic tasks across domains"
-     :capabilities (media tool-use json url response-api)
+     :capabilities (media tool-use json url responses-api)
      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
      :context-window 128
      :input-cost 1
@@ -72,7 +72,7 @@
      :cutoff-date "2024-09")
     (gpt-5.1-codex-max
      :description "Flagship model for coding, reasoning, and agentic tasks across domains"
-     :capabilities (media tool-use json url response-api)
+     :capabilities (media tool-use json url responses-api)
      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
      :context-window 128
      :input-cost 1
@@ -80,7 +80,7 @@
      :cutoff-date "2024-09")
     (gpt-5.1-codex-mini
      :description "Flagship model for coding, reasoning, and agentic tasks across domains"
-     :capabilities (media tool-use json url response-api)
+     :capabilities (media tool-use json url responses-api)
      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
      :context-window 128
      :input-cost 1
@@ -88,7 +88,7 @@
      :cutoff-date "2024-09")
     (gpt-5.2
      :description "The best model for coding and agentic tasks"
-     :capabilities (media tool-use json url response-api)
+     :capabilities (media tool-use json url responses-api)
      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
      :context-window 128
      :input-cost 1
@@ -96,7 +96,7 @@
      :cutoff-date "2025-08")
     (gpt-5.2-codex
      :description "The best model for coding and agentic tasks"
-     :capabilities (media tool-use json url response-api)
+     :capabilities (media tool-use json url responses-api)
      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
      :context-window 272
      :input-cost 1
@@ -104,7 +104,7 @@
      :cutoff-date "2025-08")
     (gpt-5.3-codex
      :description "The most capable agentic coding model to date"
-     :capabilities (media tool-use json url response-api)
+     :capabilities (media tool-use json url responses-api)
      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
      :context-window 400
      :input-cost 1
@@ -112,7 +112,7 @@
      :cutoff-date "2025-08")
     (gpt-5.4
      :description "Best intelligence at scale for agentic, coding, and professional workflows"
-     :capabilities (media tool-use json url response-api)
+     :capabilities (media tool-use json url responses-api)
      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
      :context-window 400
      :input-cost 1
@@ -120,7 +120,7 @@
      :cutoff-date "2025-08")
     (gpt-5.4-mini
      :description "Strongest mini model yet for coding, computer use, and subagent"
-     :capabilities (media tool-use json url response-api)
+     :capabilities (media tool-use json url responses-api)
      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
      :context-window 400
      :input-cost 0.33
@@ -400,7 +400,7 @@ Then we need a session token."
 
 (cl-defmethod gptel-curl--parse-stream ((backend gptel--gh) info)
   (let ((model (plist-get info :model)))
-   (if (gptel--model-capable-p 'response-api model)
+   (if (gptel--model-capable-p 'responses-api model)
        ;; Defer to gptel-openai-responses backend
        (gptel-curl--parse-stream
         (gptel--gh-responses-backend backend) info)
@@ -408,7 +408,7 @@ Then we need a session token."
 
 (cl-defmethod gptel--parse-response ((backend gptel--gh) response info)
   (let ((model (plist-get info :model)))
-    (if (gptel--model-capable-p 'response-api model)
+    (if (gptel--model-capable-p 'responses-api model)
        ;; Defer to gptel-openai-responses backend
        (gptel--parse-response
         (gptel--gh-responses-backend backend) response info)
@@ -416,56 +416,56 @@ Then we need a session token."
 
 (cl-defmethod gptel--request-data ((backend gptel--gh) prompts)
   (let ((model gptel-model))
-    (if (gptel--model-capable-p 'response-api model)
+    (if (gptel--model-capable-p 'responses-api model)
         (gptel--request-data (gptel--gh-responses-backend backend) prompts)
       (cl-call-next-method))))
 
 (cl-defmethod gptel--parse-schema ((backend gptel--gh) schema)
   (let ((model gptel-model))
-    (if (gptel--model-capable-p 'response-api model)
+    (if (gptel--model-capable-p 'responses-api model)
         (gptel--parse-schema (gptel--gh-responses-backend backend) schema)
       (cl-call-next-method))))
 
 (cl-defmethod gptel--parse-tools ((backend gptel--gh) tools)
   (let ((model gptel-model))
-    (if (gptel--model-capable-p 'response-api model)
+    (if (gptel--model-capable-p 'responses-api model)
         (gptel--parse-tools (gptel--gh-responses-backend backend) tools)
       (cl-call-next-method))))
 
 (cl-defmethod gptel--inject-tool-call ((backend gptel--gh) data tool-call new-call)
   (let ((model gptel-model))
-    (if (gptel--model-capable-p 'response-api model)
+    (if (gptel--model-capable-p 'responses-api model)
         (gptel--inject-tool-call (gptel--gh-responses-backend backend) data tool-call new-call)
       (cl-call-next-method))))
 
 (cl-defmethod gptel--parse-tool-results ((backend gptel--gh) tool-use)
   (let ((model gptel-model))
-    (if (gptel--model-capable-p 'response-api model)
+    (if (gptel--model-capable-p 'responses-api model)
         (gptel--parse-tool-results (gptel--gh-responses-backend backend) tool-use)
       (cl-call-next-method))))
 
 (cl-defmethod gptel--inject-prompt
   ((backend gptel--gh) data new-prompt &optional position)
   (let ((model gptel-model))
-    (if (gptel--model-capable-p 'response-api model)
+    (if (gptel--model-capable-p 'responses-api model)
         (gptel--inject-prompt (gptel--gh-responses-backend backend) data new-prompt position)
       (cl-call-next-method))))
 
 (cl-defmethod gptel--parse-list ((backend gptel--gh) prompt-list)
   (let ((model gptel-model))
-    (if (gptel--model-capable-p 'response-api model)
+    (if (gptel--model-capable-p 'responses-api model)
         (gptel--parse-list (gptel--gh-responses-backend backend) prompt-list)
       (cl-call-next-method))))
 
 (cl-defmethod gptel--parse-buffer ((backend gptel--gh) &optional max-entries)
   (let ((model gptel-model))
-    (if (gptel--model-capable-p 'response-api model)
+    (if (gptel--model-capable-p 'responses-api model)
         (gptel--parse-buffer (gptel--gh-responses-backend backend) max-entries)
       (cl-call-next-method))))
 
 (cl-defmethod gptel--inject-media ((backend gptel--gh) prompts)
   (let ((model gptel-model))
-    (if (gptel--model-capable-p 'response-api model)
+    (if (gptel--model-capable-p 'responses-api model)
         (gptel--inject-media (gptel--gh-responses-backend backend) prompts)
       (cl-call-next-method))))
 
@@ -542,7 +542,7 @@ for."
   (declare (indent 1))
   (let* ((url (lambda ()
                 (concat protocol "://" host
-                        (if (gptel--model-capable-p 'response-api)
+                        (if (gptel--model-capable-p 'responses-api)
                             "/v1/responses" endpoint))))
          (backend (gptel--make-gh
                    :name name
