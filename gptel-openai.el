@@ -230,7 +230,7 @@ Mutate state INFO with response metadata."
          (memq gptel-model '(o1 o1-preview o1-mini o3-mini o3 o4-mini
                                 gpt-5 gpt-5-mini gpt-5-nano gpt-5.1 gpt-5.2
                                 gpt-5.3-chat-latest gpt-5.4 gpt-5.4-mini
-                                gpt-5.4-nano))))
+                                gpt-5.4-nano gpt-5.4-pro o3-pro))))
     (when gptel-stream
       (plist-put prompts-plist :stream_options '(:include_usage t)))
     (when (and gptel-temperature (not reasoning-model-p))
