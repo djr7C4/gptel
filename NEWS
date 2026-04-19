@@ -1,5 +1,168 @@
 # -*- mode: org; -*-
 
+* 0.9.9.5-pre
+
+** Breaking changes
+
+- gptel's default ChatGPT backend has been removed. ~gptel-backend~ and
+  ~gptel-model~ now default to =nil=, and there are no registered
+  backends out of the box.  However gptel remains usable without
+  configuration: if ~gptel-send~ is called without a backend set, the
+  ChatGPT backend is created on the fly and used.
+
+- ~gptel-track-media~ affects gptel's link handling in all Org and
+  Markdown buffers, not just chat buffers that have ~gptel-mode~ turned
+  on.  When calling ~gptel-send~ with ~gptel-track-media~ turned on, and
+  the buffer is in Org or Markdown mode, links to supported file types
+  will be followed by gptel and included with the request.  Previously
+  this behavior applied only in dedicated chat buffers.
+
+  (This is actually how gptel has worked since v0.9.9.3, but this change
+  in behavior was undocumented.)
+
+- ~gptel-include-reasoning~ now defaults to =ignore=, meaning that
+  reasoning text in LLM responses will be included in buffers but
+  ignored by ~gptel-send~ on subsequent conversation turns.  The reason
+  for this change is that including the reasoning text as the LLM's
+  response on new conversation turns is not recommeded by LLM APIs.
+  Reasoning text can also fill up the context window.
+
+- ~gptel-make-tool~ now sets the tool's =:include= slot by default.
+  This means that unless =:include nil= is explicitly specified,
+  gptel-tools will default to including their results in the buffer when
+  using ~gptel-send~.  This is recommended for coherent multi-turn
+  conversations involving tool use, as the LLM uses tool results from
+  past turns for context.
+
+  (Tool result inclusion can be controlled globally (or buffer-locally)
+  for all tools via ~gptel-include-tool-results~, whose default value
+  has not been altered.)
+
+- The models =gpt-41-copilot=, =gpt-5= and =claude-opus-41= have been
+  removed from the default list of GitHub Copilot models.  These models
+  are no longer available in the GitHub Copilot API.
+
+- The models =gpt-3.5-turbo= and =gpt-3.5-turbo-16k= have been removed
+  from the default list of OpenAI models.  These models are either
+  deprecated or no longer available.
+
+- Breaking change to the ~gptel-backend~ API: When the =header= or =url=
+  fields of a backend are specified as functions, they now accept one
+  argument: the request context plist (=info=).  This is only relevant
+  if you have defined custom header or url functions for your gptel
+  backends.
+
+  (This change is required for backends whose request header or URL
+  should be modified depending on the state of the request.)
+
+** New models and backends
+
+- xAI backend: Add support for =grok-4-1-fast-reasoning=,
+  =grok-4-1-fast-non-reasoning=, =grok-4-fast-reasoning=, and
+  =grok-4-fast-non-reasoning=.
+
+- GitHub Copilot backend: Add support for =gpt-5.1-codex-,
+  =gpt-5.1-codex-mini, =claude-sonnet-4.6= and =gemini-3.1-pro-preview=,
+  =gpt-5.3-codex=, =gpt-5.4=, and =gpt-5.4-mini=.
+
+- Gemini backend: add support for =gemini-3.1-flash-lite-preview=;
+  add deprecation notice for =gemini-3-pro-preview=.
+
+- OpenAI backend: add support for =gpt-5.3-chat-latest=, =gpt-5.4=,
+  =gpt-5.4-pro=, =gpt-5.4-mini=, =gpt-5.4-nano=. =gpt-5.2=,
+  =gpt-5-mini=, =gpt-5-nano= and =o3-pro=.
+
+** New features and UI changes
+
+- New command ~gptel-preset~ to choose a gptel preset to apply, or save
+  gptel's current settings as a preset.
+
+  ~gptel-menu~ now uses this command instead of a transient menu for
+  applying presets.
+
+- The UI indicators in chat buffers that report status changes (such as
+  =Waiting=, =Ready= etc) now show the names of tools being called.  The
+  mode-line indicator display (see ~gptel-use-header-line~) has been
+  improved.
+
+- ~gptel-rewrite~ now displays status updates above the region being
+  rewritten, indicating the request state (=Waiting=, =Typing= etc) and
+  any tool calls in progress.  This provides visual feedback for
+  rewrites in progress, which was previously completely absent until the
+  response was complete.
+
+- When using ~setopt~ or the customize interface, ~gptel-backend~ can
+  now be specified as a list instead of an opaque object.  See its
+  documentation for details.
+
+- When using ~gptel-send~, tool calls that require confirmation can now
+  be examined in full in a dedicated inspection buffer, where they are
+  displayed as Elisp forms.
+
+  The tool name and tool call arguments can also be modified in-place
+  now.  These modifications /must/ be in-place; deleting tool calls or
+  adding new ones to the inspection buffer is not supported.
+
+- New hooks ~gptel-pre-tool-call-functions~ and
+  ~gptel-post-tool-call-functions~ run before and after each tool call,
+  respectively.  These hooks receive details of the (planned or
+  finished) tool call and provide fine-grained control over them.  These
+  hooks work with ~gptel-send~, including when invoked from gptel's
+  Transient menu or from Elisp.
+
+  ~gptel-pre-tool-call-functions~ can be used to modify tool call
+  arguments, short-circuit the call and provide the results, block the
+  tool call but continue the request with a message for the LLM, or stop
+  the request entirely.
+
+  ~gptel-post-tool-call-functions~ can be used to modify tool call
+  results, block the tool call but continue the request, or stop the
+  request entirely.
+
+- New variable ~gptel-bedrock-aws-cli-command~ to set the path to the
+  AWS CLI command for the Bedrock backend.  Defaults to "ews".
+
+- gptel now supports the OpenAI Responses API.  Practically speaking,
+  you should notice no change in behavior, except that the newest OpenAI
+  models should now be supported and available in OpenAI backends.
+
+  Thinking/Reasoning in responses is also supported for OpenAI models
+  now, but this is *not yet configurable* via ~gptel-include-reasoning~.
+
+** Notable bug fixes
+
+- Authentication keys are now supplied to Curl (when ~gptel-use-curl~ is
+  set) via STDIN instead of the command line.  This is more secure as
+  the command line is usually readable system-wide.
+
+- ~gptel-backend~ can now be set from customize buffers.  These are
+  produced by, for example, =M-x customize-group ⮐ gptel=.  Previously
+  ~gptel-backend~ was displayed in a read-only way, and could even break
+  the display of the customize buffer depending on its value.
+
+- Breaking change to the ~gptel-request~ API: Tool call arguments are
+  passed to ~gptel-request~ callbacks as a plist, not a list.  The plist
+  keys are the function argument names as specified in the tool
+  definition.  /This does not affect ~gptel-send~ or (to my best
+  knowledge) any of the packages using gptel./
+
+  Example: The previous behavior was
+
+  : (funcall callback `(tool-call ,web-search ("emacs" 10) ,tool-cb))
+
+  where =web-search= is a ~gptel-tool~, and =callback= and =tool-cb= are
+  the ~gptel-request~ and tool callback respectively.  The new behavior
+  is:
+
+  : (funcall callback
+  :          `(tool-call ,web-search (:query "emacs" :count 10) ,tool,cb))
+
+  where =:query= and =:count= correspond to arguments =query= and
+  =count= in the definition of =web-search=.
+
+  Note that this is a bug fix. It's how the API has been documented and
+  was supposed to work in the first place.
+
 * 0.9.9.4
 
 ** Breaking changes
@@ -435,7 +598,7 @@
   ~gptel-mcp-disconnect~.  You can use these to start MCP servers
   selectively and add tools to gptel.  These commands are also
   available from gptel's tools menu.
-  
+
   These commands are currently not autoloaded by gptel.  To access
   them, require the ~gptel-integrations~ feature.
 
@@ -477,7 +640,7 @@
   path.
 
 - The current kill can be added to gptel's context.  To enable this,
-  turn on ~gptel-expert-commands~ and use gptel's transient menu. 
+  turn on ~gptel-expert-commands~ and use gptel's transient menu.
 
 - The tools menu (~gptel-tools~) has been redesigned.  It now displays
   tool categories and associated tools in two columns, and it should
@@ -696,3 +859,7 @@ model/backend configuration.
   pops up the file correctly.
 - API keys are stripped of whitespace before sending.
 - Multiple UI, backend and prompt construction bugs have been fixed.
+
+# Local Variables:
+# fill-column: 72
+# End:
