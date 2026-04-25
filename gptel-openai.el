@@ -473,7 +473,23 @@ Media files, if present, are placed in `gptel-context'."
         (plist-get (car prompts) :content))))
 
 (defconst gptel--openai-models
-  '((gpt-5.4-mini
+  '((gpt-5.5
+     :description "The best model for coding and agentic tasks"
+     :capabilities (media tool-use json url responses-api)
+     :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
+     :context-window 1050
+     :input-cost 5
+     :output-cost 30
+     :cutoff-date "2025-12")
+    (gpt-5.5-pro
+     :description "Maximum performance model for reasoning tasks"
+     :capabilities (media tool-use json url responses-api)
+     :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
+     :context-window 1050
+     :input-cost 30
+     :output-cost 180
+     :cutoff-date "2025-12")
+    (gpt-5.4-mini
      :description "Faster, more cost-efficient version of GPT-5.4"
      :capabilities (media tool-use json url responses-api)
      :reasoning-effort (member none low medium high xhigh)
