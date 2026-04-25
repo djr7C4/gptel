@@ -230,6 +230,9 @@ Mutate state INFO with response metadata."
       (plist-put prompts-plist :stream_options '(:include_usage t)))
     (when gptel-temperature
       (plist-put prompts-plist :temperature gptel-temperature))
+    (when gptel-reasoning-effort
+      (plist-put prompts-plist (list :reasoning_effort
+                                     (symbol-name gptel-reasoning-effort))))
     (when gptel-use-tools
       (when (eq gptel-use-tools 'force)
         (plist-put prompts-plist :tool_choice "required"))
@@ -530,6 +533,7 @@ Media files, if present, are placed in `gptel-context'."
     (gpt-5.5
      :description "The best model for coding and agentic tasks"
      :capabilities (media tool-use json url responses-api)
+     :reasoning-effort (member none low medium high xhigh)
      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
      :context-window 1050
      :input-cost 5
@@ -538,6 +542,7 @@ Media files, if present, are placed in `gptel-context'."
     (gpt-5.5-pro
      :description "Maximum performance model for reasoning tasks"
      :capabilities (media tool-use json url responses-api)
+     :reasoning-effort (member none low medium high xhigh)
      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
      :context-window 1050
      :input-cost 30
