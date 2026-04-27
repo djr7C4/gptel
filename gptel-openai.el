@@ -790,25 +790,27 @@ for."
          (header (if (eq auth 'chatgpt)
                      #'gptel--openai-chatgpt-header
                    header))
-         (backend (funcall constructor
-                           :curl-args curl-args
-                           :name name
-                           :auth auth
-                           :host host
-                           :header header
-                           :key key
-                           :models (gptel--process-models models)
-                           :protocol protocol
-                           :endpoint endpoint
-                           :stream stream
-                           :request-params request-params
-                           :url (if protocol
-                                    (concat protocol "://" host endpoint)
-                                  (concat host endpoint)))))
+         (backend (apply constructor
+                         (append (list :curl-args curl-args
+                                       :name name)
+                                 ;; auth is only supported for the responses
+                                 ;; API.
+                                 (and auth (list :auth auth))
+                                 (list :host host
+                                       :header header
+                                       :key key
+                                       :models (gptel--process-models models)
+                                       :protocol protocol
+                                       :endpoint endpoint
+                                       :stream stream
+                                       :request-params request-params
+                                       :url (if protocol
+                                                (concat protocol "://" host endpoint)
+                                              (concat host endpoint)))))))
     (prog1 backend
       (setf (alist-get name gptel--known-backends
                        nil nil #'equal)
-                  backend))))
+            backend))))
 
 ;;; Azure
 ;;;###autoload
