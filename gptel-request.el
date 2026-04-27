@@ -2668,10 +2668,16 @@ See `gptel-curl--get-response' for its contents.")
                          ((not (string-blank-p resp))))
                 (string-trim resp))
               http-status http-msg))
-       ((and-let* ((error-data
-                    (cond ((plistp response) (plist-get response :error))
+      ((and-let* ((error-data
+                    (cond ((plistp response)
+                           (or (plist-get response :error)
+                               (plist-get response :detail)))
                           ((arrayp response)
-                           (cl-some (lambda (el) (plist-get el :error)) response)))))
+                           (cl-some
+                            (lambda (el)
+                              (or (plist-get el :error)
+                                  (plist-get el :detail)))
+                            response)))))
           (list nil http-status http-msg error-data)))
        ((eq response 'json-read-error)
         (list nil http-status (concat "(" http-msg ") Malformed JSON in response.") "json-read-error"))
@@ -2889,10 +2895,16 @@ PROCESS and _STATUS are process parameters."
                          (response (progn (goto-char header-size)
                                           (condition-case nil (gptel--json-read)
                                             (error 'json-read-error))))
-                         (error-data
-                          (cond ((plistp response) (plist-get response :error))
+                          (error-data
+                          (cond ((plistp response)
+                                 (or (plist-get response :error)
+                                     (plist-get response :detail)))
                                 ((arrayp response)
-                                 (cl-some (lambda (el) (plist-get el :error)) response)))))
+                                 (cl-some
+                                  (lambda (el)
+                                    (or (plist-get el :error)
+                                        (plist-get el :detail)))
+                                  response)))))
               (cond
                (error-data
                 (plist-put info :error error-data))
@@ -3084,9 +3096,15 @@ PROC-INFO is a plist with contextual information."
                       (string-trim resp))
                     http-status http-msg))
              ((and-let* ((error-data
-                          (cond ((plistp response) (plist-get response :error))
+                          (cond ((plistp response)
+                                 (or (plist-get response :error)
+                                     (plist-get response :detail)))
                                 ((arrayp response)
-                                 (cl-some (lambda (el) (plist-get el :error)) response)))))
+                                 (cl-some
+                                  (lambda (el)
+                                    (or (plist-get el :error)
+                                        (plist-get el :detail)))
+                                  response)))))
                 (list nil http-status http-msg error-data)))
              ((eq response 'json-read-error)
               (list nil http-status (concat "(" http-msg ") Malformed JSON in response.")
