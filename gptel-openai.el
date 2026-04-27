@@ -42,8 +42,7 @@
 ;; OpenAI Responses Backend
 (cl-defstruct (gptel-openai-responses (:constructor gptel--make-openai-responses)
                                       (:copier nil)
-                                      (:include gptel-backend))
-  auth)
+                                      (:include gptel-backend)))
 
 
 (defun gptel--openai-update-tokens (usage info)
@@ -708,7 +707,7 @@ sources:
 ;;;###autoload
 (cl-defun gptel-make-openai
     (name &key curl-args (models gptel--openai-models)
-          stream key request-params auth
+          stream key request-params
           (header
            (lambda (_info)
              (when-let* ((key (gptel--get-api-key)))
@@ -759,17 +758,16 @@ alist, like:
  ((\"Content-Type\" . \"application/json\"))
 
 KEY (optional) is a variable whose value is the API key, or
-function that returns the key.
-
-AUTH (optional) may be set to `chatgpt' to use ChatGPT OAuth
-tokens with the OpenAI Responses API.
+function that returns the key.  Set KEY to `oauth' to use ChatGPT
+OAuth tokens with the OpenAI Responses API.
 
 REQUEST-PARAMS (optional) is a plist of additional HTTP request
 parameters (as plist keys) and values supported by the API.  Use
 these to set parameters that gptel does not provide user options
 for."
   (declare (indent 1))
-  (let* ((responses-api (or (eq auth 'chatgpt)
+  (let* ((oauth (eq key 'oauth))
+         (responses-api (or oauth
                             (string-match-p "api\\.openai\\.com" host)))
          ;; Use the OpenAI Responses API if required
          ;; TODO: Find a more reliable way to dispatch.  Checking the host isn't
@@ -779,23 +777,20 @@ for."
                           #'gptel--make-openai
                         (require 'gptel-openai-responses)
                         #'gptel--make-openai-responses))
-         (host (if (and (eq auth 'chatgpt) (equal host "api.openai.com"))
+         (host (if (and oauth (equal host "api.openai.com"))
                    "chatgpt.com"
                  host))
          (endpoint (or endpoint
-                       (if (eq auth 'chatgpt)
+                       (if oauth
                            "/backend-api/codex/responses"
                          (if responses-api "/v1/responses"  "/v1/chat/completions"))))
-         (stream (or stream (eq auth 'chatgpt)))
-         (header (if (eq auth 'chatgpt)
+         (stream (or stream oauth))
+         (header (if oauth
                      #'gptel--openai-chatgpt-header
                    header))
          (backend (apply constructor
                          (append (list :curl-args curl-args
                                        :name name)
-                                 ;; auth is only supported for the responses
-                                 ;; API.
-                                 (and auth (list :auth auth))
                                  (list :host host
                                        :header header
                                        :key key

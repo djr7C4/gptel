@@ -253,7 +253,7 @@ Mutate state INFO with response metadata."
       (plist-put prompts-plist :instructions gptel--system-message))
     ;; Temperature
     (when (and gptel-temperature (not o-model-p)
-               (not (eq (gptel-openai-responses-auth backend) 'chatgpt)))
+               (not (eq (gptel-backend-key backend) 'oauth)))
       (plist-put prompts-plist :temperature gptel-temperature))
     ;; Max tokens
     (when gptel-max-tokens
@@ -539,7 +539,7 @@ Media files, if present, are placed in `gptel-context'."
 ;;;###autoload
 (cl-defun gptel-make-openai-responses
     (name &key curl-args (models gptel--openai-models)
-          stream key request-params auth
+          stream key request-params
           (header
            (lambda (_info) (when-let* ((key (gptel--get-api-key)))
                         `(("Authorization" . ,(concat "Bearer " key))))))
@@ -582,10 +582,9 @@ alist, like:
  ((\"Content-Type\" . \"application/json\"))
 
 KEY (optional) is a variable whose value is the API key, or
-function that returns the key.
-
-AUTH (optional) may be set to `chatgpt' to use ChatGPT OAuth
-tokens from `gptel-openai-chatgpt-auth-file' instead of an API key.
+function that returns the key.  Set KEY to `oauth' to use ChatGPT
+OAuth tokens from `gptel-openai-chatgpt-auth-file' instead of an API
+key.
 
 REQUEST-PARAMS (optional) is a plist of additional HTTP request
 parameters (as plist keys) and values supported by the API.  Use
@@ -605,7 +604,7 @@ Example:
              :capabilities (media tool-use json url responses-api)
              :mime-types (\"image/jpeg\" \"image/png\" \"image/gif\" \"image/webp\"))))"
   (declare (indent 1))
-  (when (eq auth 'chatgpt)
+  (when (eq key 'oauth)
     (when (equal host "api.openai.com")
       (setq host "chatgpt.com"))
     (when (equal endpoint "/v1/responses")
@@ -615,7 +614,6 @@ Example:
   (let ((backend (gptel--make-openai-responses
                   :curl-args curl-args
                   :name name
-                  :auth auth
                   :host host
                   :header header
                   :key key
