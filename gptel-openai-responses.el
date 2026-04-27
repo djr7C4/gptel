@@ -256,7 +256,8 @@ Mutate state INFO with response metadata."
                (not (eq (gptel-backend-key backend) 'oauth)))
       (plist-put prompts-plist :temperature gptel-temperature))
     ;; Max tokens
-    (when gptel-max-tokens
+    (when (and gptel-max-tokens
+               (not (eq (gptel-backend-key backend) 'oauth)))
       (plist-put prompts-plist :max_output_tokens gptel-max-tokens))
     (when gptel-use-tools
       (let ((tools-array
