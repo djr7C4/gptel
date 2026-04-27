@@ -337,13 +337,13 @@ to either \"high\" or \"max\"."
           (models '((deepseek-reasoner
                      :capabilities (tool reasoning)
                      :context-window 128
-                     :input-cost 0.28
-                     :output-cost 0.42)
+                     :input-cost 0.14
+                     :output-cost 0.28)
                     (deepseek-chat
                      :capabilities (tool)
                      :context-window 128
-                     :input-cost 0.28
-                     :output-cost 0.42)
+                     :input-cost 0.14
+                     :output-cost 0.28)
 		    (deepseek-v4-flash
                      :capabilities (tool reasoning)
                      :context-window 1000
