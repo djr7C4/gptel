@@ -33,6 +33,31 @@
 (declare-function gptel-context--collect-media "gptel-context")
 
 ;;; OpenAI Responses
+(defcustom gptel-openai-chatgpt-auth-file
+  (expand-file-name "auth.json" (or (getenv "CODEX_HOME") "~/.codex"))
+  "File containing ChatGPT OAuth tokens from Codex."
+  :type 'file
+  :group 'gptel)
+
+(defun gptel--openai-chatgpt-auth ()
+  "Read ChatGPT OAuth tokens from `gptel-openai-chatgpt-auth-file'."
+  (unless (file-readable-p gptel-openai-chatgpt-auth-file)
+    (user-error "No ChatGPT auth file found; run `codex login' first"))
+  (with-temp-buffer
+    (insert-file-contents-literally gptel-openai-chatgpt-auth-file)
+    (gptel--json-read)))
+
+(defun gptel--openai-chatgpt-header (_info)
+  "Return ChatGPT OAuth headers for the Codex Responses API."
+  (let* ((auth (gptel--openai-chatgpt-auth))
+         (tokens (plist-get auth :tokens))
+         (access-token (plist-get tokens :access_token))
+         (account-id (plist-get tokens :account_id)))
+    (unless (and access-token account-id)
+      (user-error "ChatGPT auth file is missing access token or account id"))
+    `(("Authorization" . ,(concat "Bearer " access-token))
+      ("ChatGPT-Account-ID" . ,account-id))))
+
 (defun gptel--openai-responses-update-tokens (usage info)
   "Update token usage information from USAGE.
 USAGE is part of the response, INFO is the request plist."
@@ -227,7 +252,8 @@ Mutate state INFO with response metadata."
     (when gptel--system-message
       (plist-put prompts-plist :instructions gptel--system-message))
     ;; Temperature
-    (when (and gptel-temperature (not o-model-p))
+    (when (and gptel-temperature (not o-model-p)
+               (not (eq (gptel-openai-responses-auth backend) 'chatgpt)))
       (plist-put prompts-plist :temperature gptel-temperature))
     ;; Reasoning effort
     (when gptel-reasoning-effort
@@ -517,7 +543,7 @@ Media files, if present, are placed in `gptel-context'."
 ;;;###autoload
 (cl-defun gptel-make-openai-responses
     (name &key curl-args (models gptel--openai-models)
-          stream key request-params
+          stream key request-params auth
           (header
            (lambda (_info) (when-let* ((key (gptel--get-api-key)))
                         `(("Authorization" . ,(concat "Bearer " key))))))
@@ -562,6 +588,9 @@ alist, like:
 KEY (optional) is a variable whose value is the API key, or
 function that returns the key.
 
+AUTH (optional) may be set to `chatgpt' to use ChatGPT OAuth
+tokens from `gptel-openai-chatgpt-auth-file' instead of an API key.
+
 REQUEST-PARAMS (optional) is a plist of additional HTTP request
 parameters (as plist keys) and values supported by the API.  Use
 these to set parameters that gptel does not provide user options
@@ -580,9 +609,17 @@ Example:
              :capabilities (media tool-use json url responses-api)
              :mime-types (\"image/jpeg\" \"image/png\" \"image/gif\" \"image/webp\"))))"
   (declare (indent 1))
+  (when (eq auth 'chatgpt)
+    (when (equal host "api.openai.com")
+      (setq host "chatgpt.com"))
+    (when (equal endpoint "/v1/responses")
+      (setq endpoint "/backend-api/codex/responses"))
+    (setq stream t)
+    (setq header #'gptel--openai-chatgpt-header))
   (let ((backend (gptel--make-openai-responses
                   :curl-args curl-args
                   :name name
+                  :auth auth
                   :host host
                   :header header
                   :key key
