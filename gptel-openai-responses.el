@@ -28,36 +28,12 @@
 (require 'map)
 (require 'gptel-request)
 (require 'gptel-openai)
+(require 'gptel-openai-codex-oauth)
 
 (defvar gptel-mode)
 (declare-function gptel-context--collect-media "gptel-context")
 
 ;;; OpenAI Responses
-(defcustom gptel-openai-chatgpt-auth-file
-  (expand-file-name "auth.json" (or (getenv "CODEX_HOME") "~/.codex"))
-  "File containing ChatGPT OAuth tokens from Codex."
-  :type 'file
-  :group 'gptel)
-
-(defun gptel--openai-chatgpt-auth ()
-  "Read ChatGPT OAuth tokens from `gptel-openai-chatgpt-auth-file'."
-  (unless (file-readable-p gptel-openai-chatgpt-auth-file)
-    (user-error "No ChatGPT auth file found; run `codex login' first"))
-  (with-temp-buffer
-    (insert-file-contents-literally gptel-openai-chatgpt-auth-file)
-    (gptel--json-read)))
-
-(defun gptel--openai-chatgpt-header (_info)
-  "Return ChatGPT OAuth headers for the Codex Responses API."
-  (let* ((auth (gptel--openai-chatgpt-auth))
-         (tokens (plist-get auth :tokens))
-         (access-token (plist-get tokens :access_token))
-         (account-id (plist-get tokens :account_id)))
-    (unless (and access-token account-id)
-      (user-error "ChatGPT auth file is missing access token or account id"))
-    `(("Authorization" . ,(concat "Bearer " access-token))
-      ("ChatGPT-Account-ID" . ,account-id))))
-
 (defun gptel--openai-responses-update-tokens (usage info)
   "Update token usage information from USAGE.
 USAGE is part of the response, INFO is the request plist."
@@ -588,8 +564,9 @@ alist, like:
 
 KEY (optional) is a variable whose value is the API key, or
 function that returns the key.  Set KEY to `oauth' to use ChatGPT
-OAuth tokens from `gptel-openai-chatgpt-auth-file' instead of an API
-key.
+OAuth tokens from the OS keyring instead of an API key.  If no
+tokens are stored, gptel requests them from OpenAI using device
+code authorization.
 
 REQUEST-PARAMS (optional) is a plist of additional HTTP request
 parameters (as plist keys) and values supported by the API.  Use
