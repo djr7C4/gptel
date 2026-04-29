@@ -522,11 +522,17 @@ Media files, if present, are placed in `gptel-context'."
     (name &key curl-args (models gptel--openai-models)
           stream key request-params
           (header
-           (lambda (_info) (when-let* ((key (gptel--get-api-key)))
-                        `(("Authorization" . ,(concat "Bearer " key))))))
-          (host "api.openai.com")
+           (if (eq key 'oauth)
+               #'gptel--openai-chatgpt-header
+             (lambda (_info) (when-let* ((key (gptel--get-api-key)))
+                               `(("Authorization" . ,(concat "Bearer " key)))))))
+          (host (if (eq key 'oauth)
+                    "chatgpt.com"
+                  "api.openai.com"))
           (protocol "https")
-          (endpoint "/v1/responses"))
+          (endpoint (if (eq key 'oauth)
+                        "/backend-api/codex/responses"
+                      "/v1/responses")))
   "Register an OpenAI Responses API backend for gptel with NAME.
 
 The Responses API is OpenAI's new API for agentic applications that
@@ -586,13 +592,8 @@ Example:
              :capabilities (media tool-use json url responses-api)
              :mime-types (\"image/jpeg\" \"image/png\" \"image/gif\" \"image/webp\"))))"
   (declare (indent 1))
-  (when (eq key 'oauth)
-    (when (equal host "api.openai.com")
-      (setq host "chatgpt.com"))
-    (when (equal endpoint "/v1/responses")
-      (setq endpoint "/backend-api/codex/responses"))
-    (setq stream t)
-    (setq header #'gptel--openai-chatgpt-header))
+  (when (and (eq key 'oauth) (not stream))
+    (error "Codex OAuth only supports streaming responses"))
   (let ((backend (gptel--make-openai-responses
                   :curl-args curl-args
                   :name name
