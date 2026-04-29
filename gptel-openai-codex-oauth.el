@@ -59,6 +59,11 @@ ChatGPT OAuth tokens are now read from the OS keyring instead."
   :type 'natnum
   :group 'gptel)
 
+(defcustom gptel-openai-chatgpt-random-source "/dev/urandom"
+  "File used as the random byte source for ChatGPT OAuth PKCE and state."
+  :type 'file
+  :group 'gptel)
+
 (defconst gptel--openai-chatgpt-keyring-label "gptel ChatGPT OAuth")
 
 (defun gptel--openai-chatgpt-base-url ()
@@ -163,11 +168,28 @@ When NO-PAD is non-nil, strip trailing padding."
           (replace-regexp-in-string "=+\\'" "" encoded)
         encoded))))
 
+(defun gptel--openai-chatgpt-random-bytes (bytes)
+  "Return BYTES random bytes from `gptel-openai-chatgpt-random-source'."
+  (unless (and (integerp bytes) (> bytes 0))
+    (user-error "BYTES must be a positive integer"))
+  (unless (and (stringp gptel-openai-chatgpt-random-source)
+               (file-readable-p gptel-openai-chatgpt-random-source))
+    (user-error "Random source is not readable: %s"
+                gptel-openai-chatgpt-random-source))
+  (with-temp-buffer
+    (set-buffer-multibyte nil)
+    (let ((coding-system-for-read 'binary))
+      (call-process "dd" gptel-openai-chatgpt-random-source t nil
+                    "bs=1" (format "count=%d" bytes) "status=none"))
+    (unless (= (buffer-size) bytes)
+      (user-error "Unable to read %d bytes from %s"
+                  bytes gptel-openai-chatgpt-random-source))
+    (buffer-string)))
+
 (defun gptel--openai-chatgpt-random-string (&optional bytes)
   "Return a random base64url string using BYTES random bytes."
   (gptel--openai-chatgpt-base64url
-   (apply #'unibyte-string
-          (cl-loop repeat (or bytes 32) collect (random 256)))
+   (gptel--openai-chatgpt-random-bytes (or bytes 32))
    t))
 
 (defun gptel--openai-chatgpt-pkce ()
@@ -385,92 +407,6 @@ STATE is the OAuth state value that must be returned by OpenAI."
            redirect-uri pkce))
       (when (process-live-p server)
         (delete-process server)))))
-
-;; (defun gptel--openai-chatgpt-request-device-code ()
-;;   "Request a ChatGPT OAuth device code from OpenAI."
-;;   (let* ((base-url (gptel--openai-chatgpt-base-url))
-;;          (response
-;;           (gptel--openai-chatgpt-post-json
-;;            (concat base-url "/api/accounts/deviceauth/usercode")
-;;            `(:client_id ,gptel--openai-chatgpt-client-id)))
-;;          (status (car response))
-;;          (body (cdr response)))
-;;     (unless (and (>= status 200) (< status 300) body)
-;;       (user-error "OpenAI device code request failed with status %s" status))
-;;     (let ((user-code (or (plist-get body :user_code)
-;;                          (plist-get body :usercode)))
-;;           (device-auth-id (plist-get body :device_auth_id)))
-;;       (unless (and user-code device-auth-id)
-;;         (user-error "OpenAI device code response was missing required data"))
-;;       (list :verification_url (concat base-url "/codex/device")
-;;             :user_code user-code
-;;             :device_auth_id device-auth-id
-;;             :interval (gptel--to-number (or (plist-get body :interval) 5))))))
-
-;; (defun gptel--openai-chatgpt-poll-device-code (device-code)
-;;   "Poll OpenAI until DEVICE-CODE is authorized."
-;;   (let* ((base-url (gptel--openai-chatgpt-base-url))
-;;          (url (concat base-url "/api/accounts/deviceauth/token"))
-;;          (start (float-time))
-;;          (max-wait (* 15 60))
-;;          response status body)
-;;     (while (progn
-;;              (setq response
-;;                    (gptel--openai-chatgpt-post-json
-;;                     url
-;;                     `(:device_auth_id
-;;                       ,(plist-get device-code :device_auth_id)
-;;                       :user_code ,(plist-get device-code :user_code)))
-;;                    status (car response)
-;;                    body (cdr response))
-;;              (cond
-;;               ((and (>= status 200) (< status 300)) nil)
-;;               ((and (memq status '(403 404))
-;;                     (< (- (float-time) start) max-wait))
-;;                (sleep-for (plist-get device-code :interval))
-;;                t)
-;;               (t
-;;                (user-error "OpenAI device authorization failed with status %s"
-;;                            status)))))
-;;     body))
-;;
-;; (defun gptel--openai-chatgpt-exchange-device-code (code-response)
-;;   "Exchange CODE-RESPONSE for ChatGPT OAuth tokens."
-;;   (let* ((base-url (gptel--openai-chatgpt-base-url))
-;;          (response
-;;           (gptel--openai-chatgpt-post-form
-;;            (concat base-url "/oauth/token")
-;;            `(("grant_type" . "authorization_code")
-;;              ("code" . ,(plist-get code-response :authorization_code))
-;;              ("redirect_uri" . ,(concat base-url "/deviceauth/callback"))
-;;              ("client_id" . ,gptel--openai-chatgpt-client-id)
-;;              ("code_verifier" . ,(plist-get code-response :code_verifier)))))
-;;          (status (car response))
-;;          (body (cdr response)))
-;;     (unless (and (>= status 200) (< status 300) body)
-;;       (user-error "OpenAI OAuth token exchange failed with status %s" status))
-;;     (gptel--openai-chatgpt-keyring-save
-;;      (gptel--openai-chatgpt-token-plist body))))
-;;
-;; ;;;###autoload
-;; (defun gptel-openai-chatgpt-login-device ()
-;;   "Request ChatGPT OAuth tokens using device authorization.
-;; This requires device code authorization to be enabled for Codex in
-;; ChatGPT Security Settings."
-;;   (interactive)
-;;   (let* ((device-code (gptel--openai-chatgpt-request-device-code))
-;;          (verification-url (plist-get device-code :verification_url))
-;;          (user-code (plist-get device-code :user_code)))
-;;     (when (fboundp 'gui-set-selection)
-;;       (gui-set-selection 'CLIPBOARD user-code))
-;;     (read-from-minibuffer
-;;      (format "Code %s is copied.  Press RET to open %s. "
-;;              user-code verification-url))
-;;     (browse-url verification-url)
-;;     (read-from-minibuffer "Press RET after authorizing ChatGPT. ")
-;;     (prog1 (gptel--openai-chatgpt-exchange-device-code
-;;             (gptel--openai-chatgpt-poll-device-code device-code))
-;;       (message "Stored ChatGPT OAuth tokens in the OS keyring."))))
 
 ;;;###autoload
 (defun gptel-openai-chatgpt-login ()
