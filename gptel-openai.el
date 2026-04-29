@@ -706,7 +706,7 @@ sources:
 
 ;;;###autoload
 (cl-defun gptel-make-openai
-    (name &key curl-args (models gptel--openai-models)
+    (name &rest args &key curl-args (models gptel--openai-models)
           stream key request-params
           (header
            (lambda (_info)
@@ -766,46 +766,32 @@ parameters (as plist keys) and values supported by the API.  Use
 these to set parameters that gptel does not provide user options
 for."
   (declare (indent 1))
-  (let* ((oauth (eq key 'oauth))
-         (responses-api (or oauth
-                            (string-match-p "api\\.openai\\.com" host)))
-         ;; Use the OpenAI Responses API if required
-         ;; TODO: Find a more reliable way to dispatch.  Checking the host isn't
-         ;; reliable.  For example, it won't work when using the Responses API
-         ;; via a proxy.
-         (constructor (if (not responses-api)
-                          #'gptel--make-openai
-                        (require 'gptel-openai-responses)
-                        #'gptel--make-openai-responses))
-         (host (if (and oauth (equal host "api.openai.com"))
-                   "chatgpt.com"
-                 host))
-         (endpoint (or endpoint
-                       (if oauth
-                           "/backend-api/codex/responses"
-                         (if responses-api "/v1/responses"  "/v1/chat/completions"))))
-         (stream (or stream oauth))
-         (header (if oauth
-                     #'gptel--openai-chatgpt-header
-                   header))
-         (backend (apply constructor
-                         (append (list :curl-args curl-args
-                                       :name name)
-                                 (list :host host
-                                       :header header
-                                       :key key
-                                       :models (gptel--process-models models)
-                                       :protocol protocol
-                                       :endpoint endpoint
-                                       :stream stream
-                                       :request-params request-params
-                                       :url (if protocol
-                                                (concat protocol "://" host endpoint)
-                                              (concat host endpoint)))))))
-    (prog1 backend
-      (setf (alist-get name gptel--known-backends
-                       nil nil #'equal)
-            backend))))
+  (if (or (string-match-p "api\\.openai\\.com" host) (eq key 'oauth))
+      ;; Use the OpenAI Responses API if required
+      ;; TODO: Find a more reliable way to dispatch.  Checking the host isn't
+      ;; reliable.  For example, it won't work when using the Responses API
+      ;; via a proxy.
+      (progn
+        (require 'gptel-openai-responses)
+        (apply #'gptel-make-openai-responses name args))
+    (let ((backend (gptel--make-openai
+                    :curl-args curl-args
+                    :name name
+                    :host host
+                    :header header
+                    :key key
+                    :models (gptel--process-models models)
+                    :protocol protocol
+                    :endpoint endpoint
+                    :stream stream
+                    :request-params request-params
+                    :url (if protocol
+                             (concat protocol "://" host endpoint)
+                           (concat host endpoint)))))
+      (prog1 backend
+        (setf (alist-get name gptel--known-backends
+                         nil nil #'equal)
+              backend)))))
 
 ;;; Azure
 ;;;###autoload
