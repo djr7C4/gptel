@@ -59,6 +59,11 @@ ChatGPT OAuth tokens are now read from the OS keyring instead."
   :type 'natnum
   :group 'gptel)
 
+(defcustom gptel-openai-chatgpt-random-source "/dev/urandom"
+  "File used as the random byte source for ChatGPT OAuth PKCE and state."
+  :type 'file
+  :group 'gptel)
+
 (defconst gptel--openai-chatgpt-keyring-label "gptel ChatGPT OAuth")
 
 (defun gptel--openai-chatgpt-base-url ()
@@ -163,11 +168,28 @@ When NO-PAD is non-nil, strip trailing padding."
           (replace-regexp-in-string "=+\\'" "" encoded)
         encoded))))
 
+(defun gptel--openai-chatgpt-random-bytes (bytes)
+  "Return BYTES random bytes from `gptel-openai-chatgpt-random-source'."
+  (unless (and (integerp bytes) (> bytes 0))
+    (user-error "BYTES must be a positive integer"))
+  (unless (and (stringp gptel-openai-chatgpt-random-source)
+               (file-readable-p gptel-openai-chatgpt-random-source))
+    (user-error "Random source is not readable: %s"
+                gptel-openai-chatgpt-random-source))
+  (with-temp-buffer
+    (set-buffer-multibyte nil)
+    (let ((coding-system-for-read 'binary))
+      (call-process "dd" gptel-openai-chatgpt-random-source t nil
+                    "bs=1" (format "count=%d" bytes) "status=none"))
+    (unless (= (buffer-size) bytes)
+      (user-error "Unable to read %d bytes from %s"
+                  bytes gptel-openai-chatgpt-random-source))
+    (buffer-string)))
+
 (defun gptel--openai-chatgpt-random-string (&optional bytes)
   "Return a random base64url string using BYTES random bytes."
   (gptel--openai-chatgpt-base64url
-   (apply #'unibyte-string
-          (cl-loop repeat (or bytes 32) collect (random 256)))
+   (gptel--openai-chatgpt-random-bytes (or bytes 32))
    t))
 
 (defun gptel--openai-chatgpt-pkce ()
