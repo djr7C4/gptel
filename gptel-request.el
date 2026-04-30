@@ -2236,19 +2236,16 @@ Initiate the request when done."
               (unless (gptel--model-capable-p 'nosystem) (car directive)))
              ;; TODO(tool) Limit tool use to capable models after documenting :capabilities
              ;; (gptel-use-tools (and (gptel--model-capable-p 'tool-use) gptel-use-tools))
-             (stream (and gptel-use-curl
-                          (gptel-backend-stream gptel-backend)
-                          (or (and (eq (gptel-backend-key gptel-backend) 'oauth)
-                                   (cl-typep gptel-backend 'gptel-openai-responses))
-                              (and (plist-get info :stream)
-                                   gptel-stream
-                                   ;; Check model-specific request-params for streaming preference
-                                   (let* ((model-params (gptel--model-request-params gptel-model))
-                                          (stream-spec (plist-get model-params :stream)))
-                                     ;; If not present, there is no model-specific preference
-                                     (or (not (memq :stream model-params))
-                                         ;; If present, it must not be :json-false or nil
-                                         (and stream-spec (not (eq stream-spec :json-false)))))))))
+             (stream (and (plist-get info :stream) gptel-use-curl gptel-stream
+                          ;; Check model-specific request-params for streaming preference
+                          (let* ((model-params (gptel--model-request-params gptel-model))
+                                 (stream-spec (plist-get model-params :stream)))
+                            ;; If not present, there is no model-specific preference
+                            (or (not (memq :stream model-params))
+                                ;; If present, it must not be :json-false or nil
+                                (and stream-spec (not (eq stream-spec :json-false)))))
+                          ;; Check backend-specific streaming settings
+                          (gptel-backend-stream gptel-backend)))
              (gptel-stream stream)
              (full-prompt))
         (when (cdr directive)       ; prompt constructed from directive/template
@@ -2265,9 +2262,7 @@ Initiate the request when done."
         ;; TODO(augment): Find a way to do this in the prompt-buffer?
         (when (and gptel-context gptel-use-context (gptel--model-capable-p 'media))
           (gptel--inject-media gptel-backend full-prompt))
-        (if stream
-            (plist-put info :stream stream)
-          (cl-remf info :stream))
+        (unless stream (cl-remf info :stream))
         (plist-put info :backend gptel-backend)
         (plist-put info :model gptel-model)
         (when gptel-include-reasoning   ;Required for next-request-only scope
