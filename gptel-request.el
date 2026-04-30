@@ -881,7 +881,8 @@ Throw an error if there is no match."
   endpoint key models url request-params
   curl-args
   (coding-system
-   nil :documentation "Can be set to `binary' if the backend expects non UTF-8 output."))
+   nil :documentation "Can be set to `binary' if the backend expects non UTF-8 output.")
+  stream-required)
 
 ;;;; Misc utilities
 (defun gptel-api-key-from-auth-source (&optional host user)
@@ -2248,6 +2249,9 @@ Initiate the request when done."
                           (gptel-backend-stream gptel-backend)))
              (gptel-stream stream)
              (full-prompt))
+        (when (and (not stream) (gptel-backend-stream-required gptel-backend))
+          (error "The gptel backend %s requires streaming but it is not enabled"
+                 (gptel-backend-name gptel-backend)))
         (when (cdr directive)       ; prompt constructed from directive/template
           (save-excursion (goto-char (point-min))
                           (gptel--parse-list-and-insert (cdr directive))))
