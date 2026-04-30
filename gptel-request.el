@@ -899,7 +899,8 @@ Throw an error if there is no match."
   endpoint key models url request-params
   curl-args
   (coding-system
-   nil :documentation "Can be set to `binary' if the backend expects non UTF-8 output."))
+   nil :documentation "Can be set to `binary' if the backend expects non UTF-8 output.")
+  stream-required)
 
 ;;;; Misc utilities
 (defun gptel-api-key-from-auth-source (&optional host user)
@@ -2255,21 +2256,21 @@ Initiate the request when done."
               (unless (gptel--model-capable-p 'nosystem) (car directive)))
              ;; TODO(tool) Limit tool use to capable models after documenting :capabilities
              ;; (gptel-use-tools (and (gptel--model-capable-p 'tool-use) gptel-use-tools))
-             (stream (and gptel-use-curl
-                          (gptel-backend-stream gptel-backend)
-                          (or (and (eq (gptel-backend-key gptel-backend) 'oauth)
-                                   (cl-typep gptel-backend 'gptel-openai-responses))
-                              (and (plist-get info :stream)
-                                   gptel-stream
-                                   ;; Check model-specific request-params for streaming preference
-                                   (let* ((model-params (gptel--model-request-params gptel-model))
-                                          (stream-spec (plist-get model-params :stream)))
-                                     ;; If not present, there is no model-specific preference
-                                     (or (not (memq :stream model-params))
-                                         ;; If present, it must not be :json-false or nil
-                                         (and stream-spec (not (eq stream-spec :json-false)))))))))
+             (stream (and (plist-get info :stream) gptel-use-curl gptel-stream
+                          ;; Check model-specific request-params for streaming preference
+                          (let* ((model-params (gptel--model-request-params gptel-model))
+                                 (stream-spec (plist-get model-params :stream)))
+                            ;; If not present, there is no model-specific preference
+                            (or (not (memq :stream model-params))
+                                ;; If present, it must not be :json-false or nil
+                                (and stream-spec (not (eq stream-spec :json-false)))))
+                          ;; Check backend-specific streaming settings
+                          (gptel-backend-stream gptel-backend)))
              (gptel-stream stream)
              (full-prompt))
+        (when (and (not stream) (gptel-backend-stream-required gptel-backend))
+          (error "The gptel backend %s requires streaming but it is not enabled"
+                 (gptel-backend-name gptel-backend)))
         (when (cdr directive)       ; prompt constructed from directive/template
           (save-excursion (goto-char (point-min))
                           (gptel--parse-list-and-insert (cdr directive))))
@@ -2284,9 +2285,7 @@ Initiate the request when done."
         ;; TODO(augment): Find a way to do this in the prompt-buffer?
         (when (and gptel-context gptel-use-context (gptel--model-capable-p 'media))
           (gptel--inject-media gptel-backend full-prompt))
-        (if stream
-            (plist-put info :stream stream)
-          (cl-remf info :stream))
+        (unless stream (cl-remf info :stream))
         (plist-put info :backend gptel-backend)
         (plist-put info :model gptel-model)
         (when gptel-include-reasoning   ;Required for next-request-only scope

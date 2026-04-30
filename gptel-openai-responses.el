@@ -593,7 +593,7 @@ Example:
              :mime-types (\"image/jpeg\" \"image/png\" \"image/gif\" \"image/webp\"))))"
   (declare (indent 1))
   (when (and (eq key 'oauth) (not stream))
-    (error "Codex OAuth only supports streaming responses"))
+    (error "Codex OAuth requires streaming"))
   (let ((backend (gptel--make-openai-responses
                   :curl-args curl-args
                   :name name
@@ -604,6 +604,7 @@ Example:
                   :protocol protocol
                   :endpoint endpoint
                   :stream stream
+                  :stream-required t
                   :request-params request-params
                   :url (if protocol
                            (concat protocol "://" host endpoint)
