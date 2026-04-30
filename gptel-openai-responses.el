@@ -604,7 +604,7 @@ Example:
                   :protocol protocol
                   :endpoint endpoint
                   :stream stream
-                  :stream-required t
+                  :stream-required (eq key 'oauth)
                   :request-params request-params
                   :url (if protocol
                            (concat protocol "://" host endpoint)
