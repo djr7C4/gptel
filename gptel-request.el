@@ -2249,9 +2249,36 @@ Initiate the request when done."
                           (gptel-backend-stream gptel-backend)))
              (gptel-stream stream)
              (full-prompt))
+        ;; The problem with this is that as can be seen above in the stream
+        ;; binding, gptel already sometimes enabled streaming even when the user
+        ;; did not request it so implementing a wrapper to emulate no streaming
+        ;; doesn't make too much sense.
+        ;;
+        ;; Some backends (e.g. gptel-openai-responses with key set to 'oauth in
+        ;; order to use a ChatGPT Plus subscription) require streaming to be
+        ;; enabled. In this case, we wrap the callback so that the provider's
+        ;; API is used with streaming but non-streaming semantics are emulated.
         (when (and (not stream) (gptel-backend-stream-required gptel-backend))
-          (error "The gptel backend %s requires streaming but it is not enabled"
-                 (gptel-backend-name gptel-backend)))
+          (letrec ((callback (plist-get info :callback))
+                   (wrapper (lambda (response info)
+                              (cond
+                               ;; When streaming, each string response is
+                               ;; accumulated into the final result.
+                               ((stringp response)
+                                (setq partial (concat partial response)))
+                               ;; When streaming, t means that this is the final
+                               ;; result.
+                               ((eq response t)
+                                ;; When streaming is disable, a string result is
+                                ;; the final result so we pass it to the
+                                ;; original callback.
+                                (funcall callback partial info))
+                               ;; Anything else (e.g. tools) are passed through
+                               ;; to the original callback.
+                               (t
+                                (funcall callback response info)))))
+                   (partial ""))
+            (plist-put info :callback wrapper)))
         (when (cdr directive)       ; prompt constructed from directive/template
           (save-excursion (goto-char (point-min))
                           (gptel--parse-list-and-insert (cdr directive))))
