@@ -2066,9 +2066,7 @@ USE-MINIBUFFER is non-nil)."
             (pcase (car choice)
               (?y (gptel--accept-tool-calls tool-calls))
               (?n (gptel--reject-tool-calls))
-              (?i (gptel--inspect-tool-calls
-                   ;; TODO Verify that the query buffer is the correct source to send
-                   tool-calls (plist-get info :buffer)))))
+              (?i (gptel--inspect-tool-calls tool-calls info))))
         ;; Prompt for confirmation from the response buffer
         (let* ((backend-name (gptel-backend-name (plist-get info :backend)))
                (actions-string
@@ -2133,6 +2131,9 @@ USE-MINIBUFFER is non-nil)."
           (when preview-handlers
             (overlay-put ov 'previews
                          (nconc (overlay-get ov 'previews) preview-handlers)))
+          ;; Including INFO is required for tool call inspection (state
+          ;; management and updates)
+          (overlay-put ov 'info info)
           (overlay-put ov 'mouse-face 'highlight)
           (overlay-put ov 'gptel-tool
                        (nconc (overlay-get ov 'gptel-tool) tool-calls))
@@ -2425,19 +2426,18 @@ This is a bug, please report it!"))))
           (setq highlight-ov context-ov)))))
   "Highlight tool call under cursor in gptel tool call inspection buffers.")
 
-(defun gptel--inspect-tool-calls (&optional tool-calls loc)
+(defun gptel--inspect-tool-calls (tool-calls info &optional tool-overlay)
   "Set up and switch to a buffer to inspect pending tool-calls.
 
-TOOL-CALLS is the alist of tool calls.  LOC is the source of the query;
-either the query buffer or the tool call dispatch overlay in the query
-buffer.  If it is an overlay, it will be cleaned up when dispatching on
-TOOL-CALLS."
+TOOL-CALLS is the alist of tool calls.  INFO is the request context
+plist.  TOOL-OVERLAY is the tool call dispatch overlay (if any) in the
+query buffer."
   (interactive (pcase-let ((`(,resp . ,o) (get-char-property-and-overlay
                                            (point) 'gptel-tool)))
-                 (list resp o)))
+                 (list resp (overlay-get o 'info) o)))
   (with-current-buffer (get-buffer-create "*gptel-tool-calls*")
-    (let ((inhibit-read-only t) tool-use
-          (tool-overlay (and (overlayp loc) loc)))
+    (let ((inhibit-read-only t)
+          (tool-use (plist-get info :tool-use)))
       (remove-overlays)
       (erase-buffer)
       (unless (derived-mode-p 'lisp-data-mode)
@@ -2445,14 +2445,9 @@ TOOL-CALLS."
         (add-hook 'post-command-hook #'gptel--inspect-tool-post-command nil t))
       ;; NOTE: This needs to be called after setting the major mode, as
       ;; buffer-local variables are wiped out.
-      (setq gptel--fsm-last
-            (buffer-local-value 'gptel--fsm-last
-                                (if tool-overlay (overlay-buffer loc) loc))
-            tool-use (plist-get (gptel-fsm-info gptel--fsm-last) :tool-use))
-      ;; For access from the dispatch functions, add tool-calls and the location
-      ;; (if it's an overlay) to INFO.  Overlays will be cleaned up.
-      (plist-put (gptel-fsm-info gptel--fsm-last)
-                 :tool-display (list tool-calls tool-overlay))
+      ;; Required to store state for accepting/rejecting calls
+      (setq gptel--fsm-last (gptel-make-fsm :info info))
+      (plist-put info :tool-display (list tool-calls tool-overlay)) ;NOTE: INFO is never nil
       (insert ";; Inspect or edit tool calls.
 ;; Adding or deleting tool calls is not supported.\n\n")
       (cl-loop for tool-spec-args-cb in tool-calls
