@@ -310,7 +310,7 @@ The Deepseek API handles reasoning effort differently than
 OpenAI. Instead of using a single reasoning_effort parameter,
 there is a thinking parameter that can be used to disable or
 enable thinking. When it is enabled, reasoning_effort can be set
-to either \"high\" or \"max\"."
+to either `high' or `max'."
   ;; Disable reasoning effort when calling the gptel-openai backend's version of
   ;; this method. It uses OpenAI conventions for the reasoning effort which are
   ;; different than what Deepseek accepts
@@ -322,7 +322,7 @@ to either \"high\" or \"max\"."
                                  (if (eq gptel-reasoning-effort 'disabled)
                                      "disabled"
                                    "enabled")))
-      (plist-put plist :reasoning_effort gptel-reasoning-effort))
+      (plist-put plist :reasoning_effort (symbol-name gptel-reasoning-effort)))
     plist))
 
 ;;;###autoload
