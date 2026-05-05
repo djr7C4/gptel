@@ -579,7 +579,7 @@ Media files, if present, are placed in `gptel-context'."
   '((claude-sonnet-4-6
      :description "The best combination of speed and intelligence"
      :capabilities (media tool-use cache)
-     :reasoning-effort '(member low medium high xhigh max)
+     :reasoning-effort (member low medium high xhigh max)
      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp" "application/pdf")
      :context-window 1000
      :input-cost 3
@@ -591,7 +591,7 @@ Media files, if present, are placed in `gptel-context'."
      ;; The levels allowed don't seem to be documented. The allowed interval was
      ;; found by trial and error via the API. 63999 is because the thinking
      ;; budget must be stricly less than max_tokens which is limited to 64000.
-     :reasoning-effort '(integer 1024 63999)
+     :reasoning-effort (integer 1024 63999)
      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp" "application/pdf")
      :context-window 200
      :input-cost 3
@@ -600,7 +600,7 @@ Media files, if present, are placed in `gptel-context'."
     (claude-haiku-4-5-20251001
      :description "Near-frontier intelligence at blazing speeds with extended thinking"
      :capabilities (media tool-use cache)
-     :reasoning-effort '(integer 1024 63999)
+     :reasoning-effort (integer 1024 63999)
      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp" "application/pdf")
      :context-window 200
      :input-cost 1
@@ -617,7 +617,7 @@ Media files, if present, are placed in `gptel-context'."
     (claude-opus-4-7
      :description "Most capable model for complex reasoning and advanced coding"
      :capabilities (media tool-use cache)
-     :reasoning-effort '(member low medium high xhigh max)
+     :reasoning-effort (member low medium high xhigh max)
      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp" "application/pdf")
      :context-window 1000
      :input-cost 5
