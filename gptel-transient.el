@@ -1319,36 +1319,78 @@ documention.  Return nil if user does not provide a number, for default."
               (val (and (symbolp history-symbol) (symbol-value history-symbol))))
     (unless (stringp (car val))
       (setcar val (prin1-to-string (car val)))))
-  (if-let* ((effort-type (get gptel-model :reasoning-effort)))
-      (cond
-       ((eq (car effort-type) 'member)
-        (let* ((table (let ((effort-choices (cons 'default (cdr effort-type))))
-                        ;; Display the completion candidates in the order listed
-                        ;; instead of allowing the completion framework to sort
-                        ;; them. This is cleaner since they are listed in
-                        ;; increasing order of reasoning effort.
-                        (lambda (string predicate action)
-                          (if (eq action 'metadata)
-                              (let ((current-metadata (cdr (completion-metadata
-                                                            (minibuffer-contents)
-                                                            effort-choices
-                                                            predicate))))
-                                `(metadata
-                                  ,@(map-merge 'alist
-                                               current-metadata
-                                               '((display-sort-function . identity)
-                                                 (cycle-sort-function . identity)))))
-                            (complete-with-action action effort-choices string predicate)))))
-               (effort (completing-read prompt table nil t)))
+  (if-let* ((effort-type (get gptel-model :reasoning-effort))
+            (allowed-types '(or member integer)))
+      (cl-labels
+          ((compute-effort-options (type target-type fun)
+             (cond
+              ((eq (car type) 'or)
+               (remq
+                nil
+                (mapcan (lambda (type2)
+                          (copy-sequence (compute-effort-options type2 target-type fun)))
+                        (cdr type))))
+              ((eq (car type) target-type)
+               (funcall fun type))
+              ((memq (car type) allowed-types)
+               nil)
+              (t
+               (error "Unknown reasoning effort type %S" type))))
+           (compute-effort-choices (type)
+             (compute-effort-options type 'member #'cdr))
+           (compute-effort-ranges (type)
+             (compute-effort-options type 'integer (lambda (type2)
+                                                     (list (cdr type2)))))
+           (describe-effort-ranges (ranges)
+             (let ((n (length ranges)))
+               (cond
+                ((= n 0)
+                 "")
+                ((= n 1)
+                 (format "%d-%d" (caar ranges) (cadar ranges)))
+                ((= n 2)
+                 (format "%s or %s"
+                         (describe-effort-ranges (list (car ranges)))
+                         (describe-effort-ranges (list (cadr ranges)))))
+                (t
+                 (format "%s, %s"
+                         (describe-effort-ranges (list (car ranges)))
+                         (describe-effort-ranges (cdr ranges))))))))
+        (let* ((effort-choices (cons 'default (compute-effort-choices effort-type)))
+               (effort-ranges (compute-effort-ranges effort-type))
+               (effort-ranges-desc (format " (%s)" (describe-effort-ranges effort-ranges)))
+               ;; Modify the prompt. Based on code from `read-number'.
+               (prompt (if (string-match "\\(\\):[ \t]*\\'" prompt)
+                           (replace-match effort-ranges-desc t t prompt 1)
+                         (replace-regexp-in-string "[ \t]*\\'"
+                                                   effort-ranges-desc
+                                                   prompt
+                                                   t
+                                                   t)))
+               ;; Display the completion candidates in the order listed instead of
+               ;; allowing the completion framework to sort them. This is cleaner
+               ;; since they are listed in increasing order of reasoning effort.
+               (table (lambda (string predicate action)
+                        (if (eq action 'metadata)
+                            (let ((current-metadata (cdr (completion-metadata
+                                                          (minibuffer-contents)
+                                                          effort-choices
+                                                          predicate))))
+                              `(metadata
+                                ,@(map-merge 'alist
+                                             current-metadata
+                                             '((display-sort-function . identity)
+                                               (cycle-sort-function . identity)))))
+                          (complete-with-action action effort-choices string predicate))))
+               (effort (completing-read prompt
+                                        table
+                                        nil
+                                        (lambda (result)
+                                          (or (equal result "default")
+                                              (cl-typep (read result) effort-type))))))
           ;; Allow the user to restore the value to nil.
-          (unless (string= effort "default")
-            (intern effort))))
-       ((eq (car effort-type) 'integer)
-        (let* ((minibuffer-default-prompt-format "")
-               (num (read-number prompt -1 history)))
-          (if (= num -1) nil num)))
-       (t
-        (user-error "Unknown reasoning effort type: %S" effort-type)))
+          (and (not (string= effort "default"))
+               (read effort))))
     (user-error "Reasoning effort is not supported for this model")))
 
 (transient-define-infix gptel--infix-reasoning-effort ()
