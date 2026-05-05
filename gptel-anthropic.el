@@ -247,8 +247,12 @@ Mutate state INFO with response metadata."
     (when gptel-temperature
       (plist-put prompts-plist :temperature gptel-temperature))
     (when gptel-reasoning-effort
-      (if (eq gptel-reasoning-effort 'adaptive)
-          (plist-put prompts-plist :thinking (list :type "adaptive"))
+      (if (symbolp gptel-reasoning-effort)
+          (progn
+            ;; Adaptive thinking is recommended by Anthropic.
+            (plist-put prompts-plist :thinking (list :type "adaptive"))
+            (plist-put prompts-plist
+                       :output_config (list :effort (symbol-name gptel-reasoning-effort))))
         (plist-put prompts-plist
                    :thinking (list :type "enabled"
                                    :budget_tokens gptel-reasoning-effort))))
