@@ -336,21 +336,25 @@ to either `high' or `max'."
           (endpoint "/v1/chat/completions")
           (models '((deepseek-reasoner
                      :capabilities (tool reasoning)
+                     :reasoning-effort (member disabled high max)
                      :context-window 128
                      :input-cost 0.14
                      :output-cost 0.28)
                     (deepseek-chat
                      :capabilities (tool)
+                     :reasoning-effort (member disabled high max)
                      :context-window 128
                      :input-cost 0.14
                      :output-cost 0.28)
 		    (deepseek-v4-flash
                      :capabilities (tool reasoning)
+                     :reasoning-effort (member disabled high max)
                      :context-window 1000
                      :input-cost 0.14
                      :output-cost 0.28)
                     (deepseek-v4-pro
                      :capabilities (tool reasoning)
+                     :reasoning-effort (member disabled high max)
                      :context-window 1000
                      :input-cost 1.74
                      :output-cost 3.48))))
