@@ -310,7 +310,7 @@ The Deepseek API handles reasoning effort differently than
 OpenAI. Instead of using a single reasoning_effort parameter,
 there is a thinking parameter that can be used to disable or
 enable thinking. When it is enabled, reasoning_effort can be set
-to either \"high\" or \"max\"."
+to either `high' or `max'."
   ;; Disable reasoning effort when calling the gptel-openai backend's version of
   ;; this method. It uses OpenAI conventions for the reasoning effort which are
   ;; different than what Deepseek accepts
@@ -322,7 +322,7 @@ to either \"high\" or \"max\"."
                                  (if (eq gptel-reasoning-effort 'disabled)
                                      "disabled"
                                    "enabled")))
-      (plist-put plist :reasoning_effort gptel-reasoning-effort))
+      (plist-put plist :reasoning_effort (symbol-name gptel-reasoning-effort)))
     plist))
 
 ;;;###autoload
@@ -336,21 +336,25 @@ to either \"high\" or \"max\"."
           (endpoint "/v1/chat/completions")
           (models '((deepseek-reasoner
                      :capabilities (tool reasoning)
+                     :reasoning-effort (member disabled high max)
                      :context-window 1000
                      :input-cost 0.14
                      :output-cost 0.28)
                     (deepseek-chat
                      :capabilities (tool)
+                     :reasoning-effort (member disabled high max)
                      :context-window 1000
                      :input-cost 0.14
                      :output-cost 0.28)
 		    (deepseek-v4-flash
                      :capabilities (tool reasoning)
+                     :reasoning-effort (member disabled high max)
                      :context-window 1000
                      :input-cost 0.14
                      :output-cost 0.28)
                     (deepseek-v4-pro
                      :capabilities (tool reasoning)
+                     :reasoning-effort (member disabled high max)
                      :context-window 1000
                      :input-cost 1.74
                      :output-cost 3.48))))
