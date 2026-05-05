@@ -10,8 +10,6 @@
   removed from the default list of OpenAI models.  These models are
   either deprecated or no longer available.
 
-* Breaking changes
-
 * 0.9.9.5 2026-05-03
 
 ** Breaking changes
