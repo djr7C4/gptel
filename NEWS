@@ -1,6 +1,6 @@
 # -*- mode: org; -*-
 
-* 0.9.9.5-pre
+* 0.9.9.5 2026-05-03
 
 ** Breaking changes
 
@@ -57,6 +57,9 @@
 
 ** New models and backends
 
+- Deepseek backend: Add support for =deepseek-v4-flash=,
+  =deepseek-v4-pro=.
+
 - Anthropic backend: Add support for =claude-opus-4.7=.
 
 - xAI backend: Add support for =grok-4-1-fast-reasoning=,
@@ -64,9 +67,9 @@
   =grok-4-fast-non-reasoning=.
 
 - GitHub Copilot backend: Add support for =claude-opus-4.7=,
-  =gpt-5.1-codex-, =gpt-5.1-codex-mini, =claude-sonnet-4.6= and
-  =gemini-3.1-pro-preview=, =gpt-5.3-codex=, =gpt-5.4=, and
-  =gpt-5.4-mini=.
+  =gpt-5.1-codex-, =gpt-5.1-codex-mini, =claude-sonnet-4.6=,
+  =gemini-3.1-pro-preview=, =gpt-5.3-codex=, =gpt-5.4=,
+  =gpt-5.4-mini=, and =gpt-5.5=.
 
 - Gemini backend: Add support for =gemini-3.1-flash-lite-preview=;
   add deprecation notice for =gemini-3-pro-preview=.
@@ -76,6 +79,17 @@
   =gpt-5.4-nano=. =gpt-5.2=, =gpt-5-mini=, =gpt-5-nano= and =o3-pro=.
 
 ** New features and UI changes
+
+- gptel now displays token usage in the header-line when using
+  gptel-mode.  This includes the tokens sent, cached tokens sent (if
+  any) and tokens received.  The displayed totals are per-request or per
+  session/buffer, and you can switch between the two by clicking the
+  display.  Hovering the mouse over the display will show both in a
+  tooltip.
+
+  Displaying costs in currency instead of tokens is not yet supported
+  because many backends do not provide all the required information
+  (tiered pricing schemes, cache creation details, etc).
 
 - New command ~gptel-preset~ to choose a gptel preset to apply, or save
   gptel's current settings as a preset.
@@ -97,7 +111,7 @@
   2. When using ~gptel-request~ for scripting purposes, you can fully
      isolate the call from the effects of gptel's environment with
      #+begin_src emacs-lisp
-     (gptel-with-preset 'gptel-backend
+     (gptel-with-preset 'gptel-default
        (gptel-request prompt ...))
      #+end_src
      Presets can also inherit from =gptel-default= to build a bespoke
@@ -186,7 +200,7 @@
   Note that this is a bug fix. It's how the API has been documented and
   was supposed to work in the first place.
 
-* 0.9.9.4
+* 0.9.9.4 2026-02-21
 
 ** Breaking changes
 
@@ -265,7 +279,7 @@
   call tools within their "reasoning" phase are now correctly handled
   by gptel.
 
-* 0.9.9.3
+* 0.9.9.3 2025-11-09
 
 ** Breaking changes
 

@@ -1,6 +1,6 @@
 ;;; gptel-request.el --- LLM request library for gptel         -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2023-2025  Karthik Chikmagalur
+;; Copyright (C) 2023-2026  Karthik Chikmagalur
 
 ;; Author: Karthik Chikmagalur;; <karthikchikmagalur@gmail.com>
 ;; Keywords: convenience
@@ -964,6 +964,22 @@ Later plists in the sequence take precedence over earlier ones."
         (setq rtn (plist-put rtn p v))))
     rtn))
 
+;; MAYBE: Can be generalized to gptel--combine-plists, taking a "combiner"
+;; function and default-value as arguments.
+(defun gptel--sum-plists (&rest plists)
+  "Sum the values of keys across PLISTS.
+
+All values must be numeric or nil.  Returns a new plist."
+  (let ((rtn (copy-sequence (pop plists)))
+        k v ls)
+    (while plists
+      (setq ls (pop plists))
+      (while ls
+        (setq k (pop ls) v (pop ls))
+        (setq rtn (plist-put rtn k (+ (or (plist-get rtn k) 0)
+                                      (or v 0))))))
+    rtn))
+
 (defun gptel--file-binary-p (path)
   "Check if file at PATH is readable and binary."
   ;; HACK Image files with ICC color profiles are characterized as ASCII
@@ -1821,7 +1837,7 @@ MACHINE is an instance of `gptel-fsm'"
   ;; a second network request: gptel tests for the presence of these flags to
   ;; handle state transitions.  (NOTE: Don't add :uuid to this.)
   (let ((info (gptel-fsm-info fsm)))
-    (dolist (key '(:tool-result :tool-use :error :http-status :reasoning))
+    (dolist (key '(:tool-result :tool-use :error :http-status :reasoning :tokens))
       (when (plist-get info key)
         (plist-put info key nil))))
   (funcall
@@ -1884,7 +1900,7 @@ injects the results into the prompt data and transitions the FSM."
                (let ((confirm))         ;Check if tool requires confirmation
                  (cond      ;:confirm in tool-call (from hooks) takes precedence
                   ((and-let* ((call-confirm (plist-member tool-call :confirm)))
-                     (setq confirm (cadr call-confirm))))
+                     (prog1 t (setq confirm (cadr call-confirm)))))
                   ((and gptel-confirm-tool-calls ;global and tool-specific setting
                         (or (eq gptel-confirm-tool-calls t) ;always confirm, or
                             (and-let* ((confirm (gptel-tool-confirm tool-spec)))
@@ -2157,7 +2173,7 @@ be used to rerun or continue the request at a later time."
            ((consp prompt)
             ;; (gptel--parse-list gptel-backend prompt)
             (gptel--with-buffer-copy buffer nil nil
-              ;; TEMP Decide on the annoated prompt-list format
+              ;; TEMP Decide on the annotated prompt-list format
               (gptel--parse-list-and-insert prompt)
               (setq major-mode 'fundamental-mode) ;Avoid mode-specific behavior
               (current-buffer)))))
@@ -2365,8 +2381,10 @@ conversation.
 
 PROMPTS is typically the input to `gptel-request', either a list of strings
 representing a conversation with alternate prompt/response turns, or a list of
-lists with explicit roles (prompt/response/tool).  See the documentation of
-`gptel-request' for the latter."
+lists with explicit roles (prompt/response/tool).
+
+See `gptel-request' for the former.  Support for the latter format is
+experimental."
   (if (stringp (car prompts))           ; Simple format, list of strings
       (cl-loop for text in prompts
                for response = nil then (not response)
@@ -2386,9 +2404,9 @@ lists with explicit roles (prompt/response/tool).  See the documentation of
          (insert gptel-response-separator
                  (propertize
                   (concat
-                   "(:name " (plist-get call :name) " :args "
-                   (prin1-to-string (plist-get call :args)) ")\n\n"
-                   (plist-get call :result))
+                   (prin1-to-string `( :name ,(plist-get call :name)
+                                       :args ,(plist-get call :args)))
+                   "\n\n" (plist-get call :result))
                   'gptel `(tool . ,(plist-get call :id)))))))))
 
 (cl-defgeneric gptel--parse-list (backend prompt-list)
