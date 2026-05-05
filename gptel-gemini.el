@@ -171,7 +171,9 @@ list."
                        :maxOutputTokens gptel-max-tokens)))
     (when gptel-include-reasoning
       (setq params
-            (plist-put params :thinkingConfig '(:includeThoughts t))))
+            (plist-put params
+                       :thinkingConfig (append (plist-get params :thinkingConfig)
+                                               '(:includeThoughts t)))))
     (when gptel--schema
       (setq params (nconc params (gptel--gemini-filter-schema
                                   (gptel--parse-schema backend gptel--schema)))))
