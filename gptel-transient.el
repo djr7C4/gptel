@@ -1332,7 +1332,7 @@ documention.  Return nil if user does not provide a number, for default."
                               (let ((current-metadata (cdr (completion-metadata
                                                             (minibuffer-contents)
                                                             effort-choices
-                                                            minibuffer-completion-predicate))))
+                                                            predicate))))
                                 `(metadata
                                   ,@(map-merge 'alist
                                                current-metadata
