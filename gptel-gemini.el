@@ -159,11 +159,12 @@ list."
             (if (and (symbolp gptel-reasoning-effort)
                      (not (eq gptel-reasoning-effort 'dynamic)))
                 (plist-put params
-                           :thinkingLevel (symbol-name gptel-reasoning-effort))
+                           :thinkingConfig
+                           (list :thinkingLevel (symbol-name gptel-reasoning-effort)))
               (plist-put params
-                         :thinkingBudget (if (eq gptel-reasoning-effort 'dynamic)
-                                             -1
-                                           gptel-reasoning-effort)))))
+                         :thinkingConfig (list :thinkingBudget (if (eq gptel-reasoning-effort 'dynamic)
+                                                                   -1
+                                                                 gptel-reasoning-effort))))))
     (when gptel-max-tokens
       (setq params
             (plist-put params
