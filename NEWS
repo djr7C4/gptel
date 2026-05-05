@@ -3,6 +3,13 @@
 * 0.9.9.6-pre
 
 ** Breaking changes
+
+- The models =claude-3-7-sonnet-20250219=, =claude-3-5-sonnet-20241022=,
+  =claude-3-5-sonnet-20240620=, =claude-3-5-haiku-20241022=,
+  =claude-3-opus-20240229= and =claude-3-haiku-20240307= have been
+  removed from the default list of OpenAI models.  These models are
+  either deprecated or no longer available.
+
 ** New models and backends
 
 - Bedrock backend: Add support for =claude-opus-4-7=.
