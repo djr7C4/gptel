@@ -422,8 +422,8 @@ SWITCHES are diff arguments."
         (setq-local diff-jump-to-old-file t))
       (display-buffer diff-buf))))
 
-(defcustom gptel-rewrite-ediff-extra-bindings '(("C-c C-a". accept-a)
-                                                ("C-c C-b". accept-b))
+(defcustom gptel-rewrite-ediff-extra-bindings '(("C-c C-a" . accept-a)
+                                                ("C-c C-b" . accept-b))
   "An alist of extra bindings to use in gptel ediff buffers.
 
 The symbols `accept-a' and `accept-b' are special and mean to
@@ -451,18 +451,30 @@ the final contents of buffer B (the edited LLM response)."
               ((buffer-live-p ov-buf)))
     (letrec ((newbuf (gptel--rewrite-prepare-buffer ovs))
              (cwc (current-window-configuration))
+             (response-bounds
+              (cl-loop
+               for ov in ovs
+               collect (let ((start (make-marker))
+                             (end (make-marker)))
+                         (set-marker start (overlay-start ov) newbuf)
+                         (set-marker end (+ (overlay-start ov)
+                                            (length (overlay-get ov 'gptel-rewrite)))
+                                     newbuf)
+                         (set-marker-insertion-type end t)
+                         (cons start end))))
              (hideshow
               (lambda (&optional restore)
-                (dolist (ov ovs)
-                  (when-let* ((overlay-buffer ov))
-                    (let ((disp (overlay-get ov 'display))
-                          (response (and restore
-                                         (with-current-buffer newbuf
-                                           (buffer-string)))))
-                      (overlay-put ov 'face (and restore 'gptel-rewrite-highlight-face))
-                      (overlay-put ov 'display response)
-                      (when restore
-                        (overlay-put ov 'gptel-rewrite response)))))))
+                (cl-loop
+                 for ov in ovs
+                 for (start . end) in response-bounds
+                 do (when-let* ((overlay-buffer ov))
+                      (let ((response (and restore
+                                           (with-current-buffer newbuf
+                                             (buffer-substring start end)))))
+                        (overlay-put ov 'face (and restore 'gptel-rewrite-highlight-face))
+                        (overlay-put ov 'display response)
+                        (when restore
+                          (overlay-put ov 'gptel-rewrite response)))))))
              (gptel--ediff-restore
               (lambda ()
                 (when (window-configuration-p cwc)
@@ -502,9 +514,7 @@ the final contents of buffer B (the edited LLM response)."
       (funcall hideshow)
       (add-hook 'ediff-quit-hook gptel--ediff-restore 50)
       (add-hook 'ediff-startup-hook gptel--ediff-setup)
-      (let ((ediff-window-setup-function #'ediff-setup-windows-plain)
-            (ediff-split-window-function #'split-window-horizontally))
-        (ediff-buffers ov-buf newbuf)))))
+      (ediff-buffers ov-buf newbuf))))
 
 (defun gptel--rewrite-merge-git (beg end new-str)
   "Produce a merge conflict region between BEG and END.
