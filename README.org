@@ -1180,7 +1180,7 @@ AWS has numerous credential provisions; we follow this order precedence,
 NOTE: Unless ~AWS_BEARER_TOKEN_BEDROCK~ token is used, the Bedrock backend needs curl >= 8.9 in order for the sigv4 signing to work properly,
 https://github.com/curl/curl/issues/11794
 
-An error will be signalled if ~gptel-curl~ is ~NIL~.
+An error will be signalled if ~gptel-use-curl~ is ~NIL~.
 
 You can pick this backend from the menu when using gptel (see [[#usage][Usage]]).
 
