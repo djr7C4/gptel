@@ -508,6 +508,17 @@ Media files, if present, are placed in `gptel-context'."
     (gemini-3.1-flash-lite-preview
      :description "DEPRECATED: The model will be shut down on May 25, 2026. Please use gemini-3.1-flash-lite instead"
      :capabilities (tool-use json media audio video)
+     :mime-types ("image/png" "image/jpeg" "image/webp" "image/heic" "image/heif"
+                  "application/pdf" "text/plain" "text/csv" "text/html"
+                  "audio/mpeg" "audio/wav" "audio/ogg" "audio/flac" "audio/aac" "audio/mp3"
+                  "video/mp4" "video/mpeg" "video/avi" "video/quicktime" "video/webm")
+     :context-window 1048
+     :input-cost 0.25
+     :output-cost 1.50
+     :cutoff-date "2025-01")
+    (gemini-3.1-flash-lite-preview
+     :description "DEPRECATED: The model will be shut down on May 25, 2026. Please use gemini-3.1-flash-lite instead"
+     :capabilities (tool-use json media audio video)
      :reasoning-effort (member minimal low medium high)
      :mime-types ("image/png" "image/jpeg" "image/webp" "image/heic" "image/heif"
                   "application/pdf" "text/plain" "text/csv" "text/html"
