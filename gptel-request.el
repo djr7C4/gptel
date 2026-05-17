@@ -1003,15 +1003,22 @@ MODE-SYM is typically a major-mode symbol."
 
 (defvar url-http-end-of-headers)
 (defvar url-http-response-status)
-(cl-defun gptel--url-retrieve (url &key method data headers)
+;; TODO: Handle and return HTTP errors
+(cl-defun gptel--url-retrieve (url &key method data headers
+                                   (content-type "application/json"))
   "Retrieve URL synchronously with METHOD, DATA and HEADERS."
   (declare (indent 1))
   (let ((url-request-method (if (eq method 'post) "POST" "GET"))
-        (url-request-data (when (eq method 'post) (encode-coding-string (gptel--json-encode data) 'utf-8)))
+        (url-request-data
+         (when (eq method 'post)
+           (encode-coding-string
+            (pcase content-type
+              ("application/json" (gptel--json-encode data))
+              (_ data))
+            'utf-8)))
         (url-mime-accept-string "application/json")
         (url-request-extra-headers
-         `(("content-type" . "application/json")
-           ,@headers)))
+         `(("content-type" . ,content-type) ,@headers)))
     (with-current-buffer (url-retrieve-synchronously url 'silent)
       (goto-char url-http-end-of-headers)
       (gptel--json-read))))
