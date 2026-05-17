@@ -1022,15 +1022,22 @@ MODE-SYM is typically a major-mode symbol."
 
 (defvar url-http-end-of-headers)
 (defvar url-http-response-status)
-(cl-defun gptel--url-retrieve (url &key method data headers)
+;; TODO: Handle and return HTTP errors
+(cl-defun gptel--url-retrieve (url &key method data headers
+                                   (content-type "application/json"))
   "Retrieve URL synchronously with METHOD, DATA and HEADERS."
   (declare (indent 1))
   (let ((url-request-method (if (eq method 'post) "POST" "GET"))
-        (url-request-data (when (eq method 'post) (encode-coding-string (gptel--json-encode data) 'utf-8)))
+        (url-request-data
+         (when (eq method 'post)
+           (encode-coding-string
+            (pcase content-type
+              ("application/json" (gptel--json-encode data))
+              (_ data))
+            'utf-8)))
         (url-mime-accept-string "application/json")
         (url-request-extra-headers
-         `(("content-type" . "application/json")
-           ,@headers)))
+         `(("content-type" . ,content-type) ,@headers)))
     (with-current-buffer (url-retrieve-synchronously url 'silent)
       (goto-char url-http-end-of-headers)
       (gptel--json-read))))
@@ -2694,10 +2701,10 @@ See `gptel-curl--get-response' for its contents.")
                          ((not (string-blank-p resp))))
                 (string-trim resp))
               http-status http-msg))
-      ((and-let* ((error-data
-                    (cond ((plistp response)
-                           (or (plist-get response :error)
-                               (plist-get response :detail)))
+       ((and-let* ((error-data
+                    (cond ((plistp response) (or (plist-get response :error)
+                                                 (plist-get response :message)
+                                                 (plist-get response :Message)))
                           ((arrayp response)
                            (cl-some
                             (lambda (el)
@@ -2894,47 +2901,49 @@ PROCESS and _STATUS are process parameters."
            (info (gptel-fsm-info fsm))
            (http-status (plist-get info :http-status)))
       (when gptel-log-level (gptel-curl--log-response proc-buf info)) ;logging
-      (when (buffer-live-p (plist-get info :buffer))
-        (cond
-         ;; Curl exited with a non-zero status: connection-level failure
-         ((not (zerop exit-status))
-          ;; MAYBE: This transition should happen in the process filter, but it's
-          ;; not clear how to reliably detect Curl failure there.
-          (gptel--fsm-transition fsm)     ;Curl failed, WAIT -> TYPE
-          (plist-put info :error
-                     (format "Curl failed with exit code %d. See Curl manpage for details."
-                             exit-status))
-          (plist-put info :status "Curl failure")
-          (with-demoted-errors "gptel callback error: %S"
-            (funcall (plist-get info :callback) nil info)))
-         ;; Finish handling a successful streaming response
-         ((member http-status '("200" "100"))
-          (with-demoted-errors "gptel callback error: %S"
-            (funcall (plist-get info :callback) t info)))
-         ;; Capture error message from HTTP error response
-         (t
-          (with-current-buffer proc-buf
-            (goto-char (point-max))
-            (if (not (search-backward (plist-get info :uuid) nil t))
-                (plist-put info :error "Could not parse Curl response")
-              (backward-char)
-              (pcase-let* ((`(,_ . ,header-size) (read (current-buffer)))
-                           (response (progn (goto-char header-size)
-                                            (condition-case nil (gptel--json-read)
-                                              (error 'json-read-error))))
-                           (error-data
-                            (cond ((plistp response) (plist-get response :error))
-                                  ((arrayp response)
-                                   (cl-some (lambda (el) (plist-get el :error)) response)))))
-                (cond
-                 (error-data
-                  (plist-put info :error error-data))
-                 ((eq response 'json-read-error)
-                  (plist-put info :error "Malformed JSON in response."))
-                 (t (plist-put info :error "Could not parse HTTP response."))))))
-          (with-demoted-errors "gptel callback error: %S"
-            (funcall (plist-get info :callback) nil info))))
-        (gptel--fsm-transition fsm)))      ; Move to next state
+      (cond
+       ;; Curl exited with a non-zero status: connection-level failure
+       ((not (zerop exit-status))
+        ;; MAYBE: This transition should happen in the process filter, but it's
+        ;; not clear how to reliably detect Curl failure there.
+        (gptel--fsm-transition fsm)     ;Curl failed, WAIT -> TYPE
+        (plist-put info :error
+                   (format "Curl failed with exit code %d. See Curl manpage for details."
+                           exit-status))
+        (plist-put info :status "Curl failure")
+        (with-demoted-errors "gptel callback error: %S"
+          (funcall (plist-get info :callback) nil info)))
+       ;; Finish handling a successful streaming response
+       ((member http-status '("200" "100"))
+        (with-demoted-errors "gptel callback error: %S"
+          (funcall (plist-get info :callback) t info)))
+       ;; Capture error message from HTTP error response
+       (t
+        (with-current-buffer proc-buf
+          (goto-char (point-max))
+          (if (not (search-backward (plist-get info :uuid) nil t))
+              (plist-put info :error "Could not parse Curl response")
+            (backward-char)
+            (pcase-let* ((`(,_ . ,header-size) (read (current-buffer)))
+                         (response (progn (goto-char header-size)
+                                          (condition-case nil (gptel--json-read)
+                                            (error 'json-read-error))))
+                         (error-data
+                          (cond ((plistp response)
+                                 (or (plist-get response :error)
+                                     (plist-get response :message)
+                                     (plist-get response :Message)))
+                                ((arrayp response)
+                                 (cl-some (lambda (el) (plist-get el :error)) response)))))
+              (cond
+               (error-data
+                (plist-put info :error error-data))
+               ((eq response 'json-read-error)
+                (plist-put info :error "Malformed JSON in response."))
+               (t (plist-put info :error "Could not parse HTTP response."))))))
+        (with-demoted-errors "gptel callback error: %S"
+          (funcall (plist-get info :callback) nil info))))
+      (gptel--fsm-transition fsm))      ; Move to next state
     (setf (alist-get process gptel--request-alist nil 'remove) nil)
     (kill-buffer proc-buf)))
 
@@ -3120,9 +3129,9 @@ PROC-INFO is a plist with contextual information."
                       (string-trim resp))
                     http-status http-msg))
              ((and-let* ((error-data
-                          (cond ((plistp response)
-                                 (or (plist-get response :error)
-                                     (plist-get response :detail)))
+                          (cond ((plistp response) (or (plist-get response :error)
+                                                       (plist-get response :message)
+                                                       (plist-get response :Message)))
                                 ((arrayp response)
                                  (cl-some
                                   (lambda (el)
