@@ -2678,10 +2678,10 @@ See `gptel-curl--get-response' for its contents.")
                 (string-trim resp))
               http-status http-msg))
        ((and-let* ((error-data
-                    (cond ((plistp response) (or (plist-get response :detail)
-                                                 (plist-get response :error)
-                                                 (plist-get response :message)
-                                                 (plist-get response :Message)))
+                    (cond ((plistp response) (or (plist-get response :detail)    ; openai-oauth
+                                                 (plist-get response :error)     ; generic
+                                                 (plist-get response :message)   ; bedrock
+                                                 (plist-get response :Message))) ; bedrock
                           ((arrayp response)
                            (cl-some (lambda (el) (plist-get el :error)) response)))))
           (list nil http-status http-msg error-data)))
