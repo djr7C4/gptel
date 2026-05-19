@@ -10,11 +10,26 @@
   removed from the default list of OpenAI models.  These models are
   either deprecated or no longer available.
 
+- The minimum required version of the =transient= package is now 0.7.8.
+
+- ~gptel-temperaure~ now defaults to nil, meaning the API's default
+  value will be used.  This is because some backends don't support
+  providing the temperature, those that do don't agree on the scale and
+  what a temperature of 1 means.
+
 ** New models and backends
 
 - Bedrock backend: Add support for =claude-opus-4-7=.
 
+- Gemini backend: Add support for =gemini-3.1-flash-lite= and deprecate
+  the preview version.
+
 ** New features and UI changes
+
+- OpenAI subscription support: gptel now supports authentication with
+  OpenAI ChatGPT Plus/Pro accounts.  This allows using the ChatGPT Codex
+  endpoint without an API key.  See =gptel-make-openai-oauth= and the
+  README for details.
 
 - When running ~gptel-rewrite~, reasoning text was previously always
   completely omitted from the response.  This was required to avoid
@@ -26,6 +41,12 @@
   name.
 
 ** Notable bug fixes
+
+- Improved error messages: Curl request failures now include more
+  diagnostic information.
+
+- Fix bounds issues when using the gptel transient menu with =evil-mode=
+  visual selections.
 
 * 0.9.9.5 2026-05-03
 
