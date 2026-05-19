@@ -21,6 +21,8 @@
 
 - Bedrock backend: Add support for =claude-opus-4-7=.
 
+- Gemini backend: Add support for =gemini-3.5-flash=.
+
 - Gemini backend: Add support for =gemini-3.1-flash-lite= and deprecate
   the preview version.
 
