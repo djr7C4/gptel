@@ -28,7 +28,6 @@
 (require 'map)
 (require 'gptel-request)
 (require 'gptel-openai)
-(require 'gptel-openai-codex-oauth)
 
 (defvar gptel-mode)
 (declare-function gptel-context--collect-media "gptel-context")
@@ -230,16 +229,14 @@ Mutate state INFO with response metadata."
     (when gptel--system-message
       (plist-put prompts-plist :instructions gptel--system-message))
     ;; Temperature
-    (when (and gptel-temperature (not o-model-p)
-               (not (eq (gptel-backend-key backend) 'oauth)))
+    (when (and gptel-temperature (not o-model-p))
       (plist-put prompts-plist :temperature gptel-temperature))
     ;; Reasoning effort
     (when gptel-reasoning-effort
       (plist-put prompts-plist :reasoning
                  (list :effort (symbol-name gptel-reasoning-effort))))
     ;; Max tokens
-    (when (and gptel-max-tokens
-               (not (eq (gptel-backend-key backend) 'oauth)))
+    (when gptel-max-tokens
       (plist-put prompts-plist :max_output_tokens gptel-max-tokens))
     (when gptel-use-tools
       (let ((tools-array
@@ -524,17 +521,11 @@ Media files, if present, are placed in `gptel-context'."
     (name &key curl-args (models gptel--openai-models)
           stream key request-params
           (header
-           (if (eq key 'oauth)
-               #'gptel--openai-chatgpt-header
-             (lambda (_info) (when-let* ((key (gptel--get-api-key)))
-                               `(("Authorization" . ,(concat "Bearer " key)))))))
-          (host (if (eq key 'oauth)
-                    "chatgpt.com"
-                  "api.openai.com"))
+           (lambda (_info) (when-let* ((key (gptel--get-api-key)))
+                        `(("Authorization" . ,(concat "Bearer " key))))))
+          (host "api.openai.com")
           (protocol "https")
-          (endpoint (if (eq key 'oauth)
-                        "/backend-api/codex/responses"
-                      "/v1/responses")))
+          (endpoint "/v1/responses"))
   "Register an OpenAI Responses API backend for gptel with NAME.
 
 The Responses API is OpenAI's new API for agentic applications that
@@ -571,10 +562,7 @@ alist, like:
  ((\"Content-Type\" . \"application/json\"))
 
 KEY (optional) is a variable whose value is the API key, or
-function that returns the key.  Set KEY to `oauth' to use ChatGPT
-OAuth tokens from the OS keyring instead of an API key.  If no
-tokens are stored, gptel requests them from OpenAI using device
-code authorization.
+function that returns the key.
 
 REQUEST-PARAMS (optional) is a plist of additional HTTP request
 parameters (as plist keys) and values supported by the API.  Use
@@ -594,8 +582,6 @@ Example:
              :capabilities (media tool-use json url responses-api)
              :mime-types (\"image/jpeg\" \"image/png\" \"image/gif\" \"image/webp\"))))"
   (declare (indent 1))
-  (when (and (eq key 'oauth) (not stream))
-    (error "Codex OAuth requires streaming"))
   (let ((backend (gptel--make-openai-responses
                   :curl-args curl-args
                   :name name
@@ -606,7 +592,6 @@ Example:
                   :protocol protocol
                   :endpoint endpoint
                   :stream stream
-                  :stream-required (eq key 'oauth)
                   :request-params request-params
                   :url (if protocol
                            (concat protocol "://" host endpoint)
