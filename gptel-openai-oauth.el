@@ -216,7 +216,7 @@ before constructing the headers."
 
 ;;;###autoload
 (cl-defun gptel-make-openai-oauth
-    (name &key curl-args (stream t) request-params
+    (name &key curl-args request-params
           (header #'gptel--openai-oauth-header)
           (host "chatgpt.com")
           (protocol "https")
@@ -240,7 +240,7 @@ For keyword argument meanings, see `gptel-make-openai'."
                   :models (gptel--process-models models)
                   :protocol protocol
                   :endpoint endpoint
-                  :stream stream
+                  :stream t
                   :request-params request-params
                   :url (if protocol
                            (concat protocol "://" host endpoint)
