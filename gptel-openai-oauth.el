@@ -53,6 +53,11 @@ Removes unsupported temperature settings from the payload."
        '(gptel gptel-openai-oauth)
        "Codex models do not support setting request temperature, ignoring `gptel-temperature'")
       (cl-remf prompts-plist :temperature))
+    (when (plist-member prompts-plist :max_output_tokens)
+      (display-warning
+       '(gptel gptel-openai-oauth)
+       "Codex models do not support setting request max_output_tokens, ignoring `gptel-max-tokens'")
+      (cl-remf prompts-plist :max_output_tokens))
     prompts-plist))
 
 ;;;; OpenAI OAuth login
@@ -220,7 +225,7 @@ before constructing the headers."
 
 ;;;###autoload
 (cl-defun gptel-make-openai-oauth
-    (name &key curl-args (stream t) request-params
+    (name &key curl-args request-params
           (header #'gptel--openai-oauth-header)
           (host "chatgpt.com")
           (protocol "https")
@@ -244,7 +249,7 @@ For keyword argument meanings, see `gptel-make-openai'."
                   :models (gptel--process-models models)
                   :protocol protocol
                   :endpoint endpoint
-                  :stream stream
+                  :stream t
                   :request-params request-params
                   :url (if protocol
                            (concat protocol "://" host endpoint)
