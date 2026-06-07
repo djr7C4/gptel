@@ -1256,6 +1256,23 @@ returned as a list of strings."
                            (gptel--parse-list
                             gptel-backend (cdr directive))))))))
 
+;;;; Error handling
+(defun gptel--get-plist-error (response)
+  "Extract the error from the response when it is a plist.
+
+Return nil if no error occurred."
+  (or (plist-get response :error)     ; generic
+      (plist-get response :detail)    ; openai-oauth
+      (plist-get response :message)   ; bedrock
+      (plist-get response :Message))) ; bedrock
+
+(defun gptel--get-error (response)
+  "Extract the error from the response.
+
+Return nil if no error occurred."
+  (cond ((plistp response) (gptel--get-plist-error response))
+        ((arrayp response)
+         (cl-some #'gptel--get-plist-error response))))
 
 ;;; Logging
 
@@ -2715,13 +2732,7 @@ See `gptel-curl--get-response' for its contents.")
                          ((not (string-blank-p resp))))
                 (string-trim resp))
               http-status http-msg))
-       ((and-let* ((error-data
-                    (cond ((plistp response) (or (plist-get response :error)     ; generic
-                                                 (plist-get response :detail)    ; openai-oauth
-                                                 (plist-get response :message)   ; bedrock
-                                                 (plist-get response :Message))) ; bedrock
-                          ((arrayp response)
-                           (cl-some (lambda (el) (plist-get el :error)) response)))))
+       ((and-let* ((error-data (gptel--get-error response)))
           (list nil http-status http-msg error-data)))
        ((eq response 'json-read-error)
         (list nil http-status (concat "(" http-msg ") Malformed JSON in response.") "json-read-error"))
@@ -2939,14 +2950,7 @@ PROCESS and _STATUS are process parameters."
                          (response (progn (goto-char header-size)
                                           (condition-case nil (gptel--json-read)
                                             (error 'json-read-error))))
-                         (error-data
-                          (cond ((plistp response)
-                                 (or (plist-get response :error)     ; generic
-                                     (plist-get response :detail)    ; openai-oauth
-                                     (plist-get response :message)   ; bedrock
-                                     (plist-get response :Message))) ; bedrock
-                                ((arrayp response)
-                                 (cl-some (lambda (el) (plist-get el :error)) response)))))
+                         (error-data (gptel--get-error response)))
               (cond
                (error-data
                 (plist-put info :error error-data))
@@ -3137,13 +3141,7 @@ PROC-INFO is a plist with contextual information."
                                ((not (string-blank-p resp))))
                       (string-trim resp))
                     http-status http-msg))
-             ((and-let* ((error-data
-                          (cond ((plistp response) (or (plist-get response :error)     ; generic
-                                                       (plist-get response :detail)    ; openai-oauth
-                                                       (plist-get response :message)   ; bedrock
-                                                       (plist-get response :Message))) ; bedrock
-                                ((arrayp response)
-                                 (cl-some (lambda (el) (plist-get el :error)) response)))))
+             ((and-let* ((error-data (gptel--get-error response)))
                 (list nil http-status http-msg error-data)))
              ((eq response 'json-read-error)
               (list nil http-status (concat "(" http-msg ") Malformed JSON in response.")
