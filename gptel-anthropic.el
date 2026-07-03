@@ -593,6 +593,15 @@ Media files, if present, are placed in `gptel-context'."
      :context-window 1000
      :input-cost 3
      :output-cost 15
+     :cutoff-date "2026-01")
+    (claude-sonnet-4-6
+     :description "The best combination of speed and intelligence"
+     :capabilities (media tool-use cache)
+     :reasoning-effort (member low medium high xhigh max)
+     :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp" "application/pdf")
+     :context-window 1000
+     :input-cost 3
+     :output-cost 15
      :cutoff-date "2025-08")
     (claude-sonnet-4-5-20250929
      :description "High-performance model with exceptional reasoning and efficiency"
