@@ -2255,6 +2255,7 @@ be used to rerun or continue the request at a later time."
            ((integerp position)
             (set-marker (make-marker) position buffer))))
          (buffer (marker-buffer start-marker))
+         (gptel-system-prompt system) ;Required for copying into the prompt buffer
          (gptel--schema schema)
          (prompt-buffer
           (cond                       ;prompt from buffer or explicitly supplied
@@ -2273,16 +2274,21 @@ be used to rerun or continue the request at a later time."
               (gptel--parse-list-and-insert prompt)
               (setq major-mode 'fundamental-mode) ;Avoid mode-specific behavior
               (current-buffer)))))
-         (system-list (gptel--parse-directive system 'raw)) ;eval function-valued system prompts
          (info (list :data prompt-buffer
                      :buffer buffer
                      :position start-marker)))
     (when transforms (plist-put info :transforms transforms))
-    (with-current-buffer prompt-buffer
-      (setq gptel-system-prompt         ;guaranteed to be buffer-local
-            ;; Retain single-part system messages as strings to avoid surprises
-            ;; when applying presets
-            (if (cdr system-list) system-list (car system-list))))
+    ;; Evaluate function valued system prompts in the request buffer, but then
+    ;; set it in the prompt construction buffer
+    (when-let* ((system (buffer-local-value 'gptel-system-prompt prompt-buffer))
+                ((functionp system)))
+      (let ((system-list (with-current-buffer buffer
+                           (gptel--parse-directive system 'raw))))
+        (with-current-buffer prompt-buffer ;and then set the result in the prompt buffer
+          (setq gptel-system-prompt        ;guaranteed to be buffer-local
+                ;; Retain single-part system messages as strings to avoid surprises
+                ;; when applying presets
+                (if (cdr system-list) system-list (car system-list))))))
     (when stream (plist-put info :stream stream))
     ;; This context should not be confused with the context aggregation context!
     (when callback (plist-put info :callback callback))
@@ -2637,12 +2643,14 @@ PROMPTS is the plist of previous user queries and LLM responses.")
 
 If SHOOSH is true, don't issue a warning."
   (unless backend
+    (setq gptel-backend
+          (or (cdar gptel--known-backends) ;First available backend
+              (gptel-make-openai "ChatGPT" :key 'gptel-api-key :stream t))
+          backend gptel-backend)
     (unless shoosh
       (display-warning
-       'gptel "No gptel-backend defined: defaulting to ChatGPT"))
-    (setq gptel-backend
-          (gptel-make-openai "ChatGPT" :key 'gptel-api-key :stream t)
-          backend gptel-backend))
+       'gptel (format "No gptel-backend defined: defaulting to %s"
+                      (gptel-backend-name gptel-backend)))))
   (let ((available (gptel-backend-models backend)))
     (when (stringp model)
       (unless shoosh
@@ -2661,7 +2669,7 @@ If SHOOSH is true, don't issue a warning."
            (format (concat "Preferred `gptel-model' \"%s\" not"
                            "supported in \"%s\", using \"%s\" instead")
                    model (gptel-backend-name backend) fallback)))
-        (setq-local gptel-model fallback)))))
+        (setq gptel-model fallback)))))
 
 
 ;;; url-retrieve response handling
