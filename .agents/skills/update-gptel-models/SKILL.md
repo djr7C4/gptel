@@ -6,8 +6,9 @@ description: Retrieve information on new models and update the gptel code
 Use the following process to update models for gptel. Only look for new OpenAI,
 Anthropic, Gemini and DeepSeek models. Don't worry about other providers. Apply
 the following steps for each provider in a new branch (based on master) for the
-models being added for that provider. The branch name should be descriptive
-(e.g. openai-gpt-5.6). Don't run any tests.
+models being added for that provider. Pull updates from the upstream master
+branch before creating the new branch. The name of the new branch should be
+descriptive (e.g. openai-gpt-5.6). Don't run any tests.
 
 1. Determine the list of known models for the provider. This can be done by
    looking at the model definitions in the appropriate file
@@ -49,7 +50,7 @@ models being added for that provider. The branch name should be descriptive
 
    1. The default model is the first OpenAI model in the list. This should not
       be updated unless there is a newer model of similar cost. If no such model
-      exists, keep the current cost. The rule takes priority over rule 3.2.
+      exists, keep the current model. The rule takes priority over rule 3.2.
 
    2. Models from the same series should be adjacent in the list with more
       powerful models listed first. For example, gpt-5.4-pro, gpt-5.4,
@@ -67,9 +68,9 @@ models being added for that provider. The branch name should be descriptive
 5. Merge the branch into the reasoning-effort branch. Make sure not to remove
    existing reasoning effort information from the model definitions. Add
    reasoning effort defintions for the new models but do not change anything
-   else.
+   else. If merge conflicts occur other than missing reasoning effort
+   information that you can easily resolve, alert the user instead of attempting
+   to resolve the merge conflicts yourself.
 
 6. Commit the changes to the reasoning effort branch separately for each
    provider that had new models added.
-
-7. Merge the reasoning-effort branch into the dev branch.
