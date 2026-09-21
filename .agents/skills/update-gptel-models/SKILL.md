@@ -19,7 +19,7 @@ descriptive (e.g. openai-gpt-5.6). Don't run any tests.
    https://developers.openai.com/api/docs/models. For Anthropic, use
    https://platform.claude.com/docs/en/about-claude/models/overview. For Gemini,
    use https://ai.google.dev/gemini-api/docs/models. For DeekSeek, use
-   https://api-docs.deepseek.com/quick_start/pricing/.
+   off-peak pricing from https://api-docs.deepseek.com/quick_start/pricing/.
 
    The full gptel description of a model looks like
 
