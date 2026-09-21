@@ -10,6 +10,10 @@ models being added for that provider. Pull updates from the upstream master
 branch before creating the new branch. The name of the new branch should be
 descriptive (e.g. openai-gpt-5.6). Don't run any tests.
 
+When committing, prefix with the name of the main file modified (without the
+extension) as per standard gptel conventions. For example, "gptel-openai: Added
+gpt-6-astra".
+
 1. Determine the list of known models for the provider. This can be done by
    looking at the model definitions in the appropriate file
    (e.g. gptel-openai.el for OpenAI).
@@ -62,6 +66,9 @@ descriptive (e.g. openai-gpt-5.6). Don't run any tests.
 
    4. Don't include reasoning effort. This needs to be added later when these
       branches are merged into the reasoning-effort branch instead.
+
+   5. For OpenAI, also update the default models list in gptel-make-openai-oauth
+      in gptel-openai-oauth.el.
 
 4. Commit the branch (but do not push).
 
