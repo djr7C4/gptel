@@ -594,8 +594,8 @@ Media files, if present, are placed in `gptel-context'."
       :reasoning-effort (member disabled low medium high xhigh max)
       :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp" "application/pdf")
       :context-window 1000
-      :input-cost 3
-      :output-cost 15
+      :input-cost 2
+      :output-cost 10
       :cutoff-date "2026-01")
      (claude-sonnet-4-6
       :description "The best combination of speed and intelligence"
