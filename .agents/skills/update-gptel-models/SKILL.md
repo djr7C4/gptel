@@ -81,3 +81,6 @@ gpt-6-astra".
 
 6. Commit the changes to the reasoning effort branch separately for each
    provider that had new models added.
+
+In your report to the user, give links to the webpages that you obtained the new
+model information from.
