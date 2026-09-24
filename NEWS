@@ -5,7 +5,8 @@
 ** Breaking changes
 ** New models and backends
 
-- Anthropic backend: Add support for =claude-fable-5-1=.
+- Anthropic backend: Add support for =claude-opus-5-5= and
+  =claude-fable-5-1=.
 
 - OpenAI backend: Add support for =gpt-6-astra=.
 
