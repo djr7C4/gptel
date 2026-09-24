@@ -70,6 +70,9 @@ gpt-6-astra".
    5. For OpenAI, also update the default models list in gptel-make-openai-oauth
       in gptel-openai-oauth.el.
 
+   6. Do not copy descriptions from the webpages given. Instead, copy the
+      closest description from another model that was previously added to gptel.
+
 4. Commit the branch (but do not push).
 
 5. Merge the branch into the reasoning-effort branch. Make sure not to remove
