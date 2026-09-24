@@ -613,6 +613,15 @@ Media files, if present, are placed in `gptel-context'."
       :input-cost 3
       :output-cost 15
       :cutoff-date "2025-03")
+     (claude-opus-5-5
+      :description "Complex agentic coding and enterprise work"
+      :capabilities (media tool-use cache)
+      :reasoning-effort (member low medium high xhigh max)
+      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp" "application/pdf")
+      :context-window 1000
+      :input-cost 4
+      :output-cost 20
+      :cutoff-date "2026-06")
      (claude-fable-5-1
       :description "Most capable model for complex reasoning and advanced coding"
       :capabilities (media tool-use cache)
