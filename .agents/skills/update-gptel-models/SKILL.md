@@ -73,6 +73,9 @@ gpt-6-astra".
    6. Do not copy descriptions from the webpages given. Instead, copy the
       closest description from another model that was previously added to gptel.
 
+   7. Update NEWS with the new models. Be sure to follow the conventions in that
+      file exactly. Do not deviate or add extra information.
+
 4. Commit the branch (but do not push).
 
 5. Merge the branch into the reasoning-effort branch. Make sure not to remove
