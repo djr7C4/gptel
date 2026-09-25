@@ -402,10 +402,11 @@ needed for caching."
                token '( :id_token :https://api.openai.com/auth
                         :organizations 0 :id))))
          (session-id
-          (with-current-buffer (or (plist-get info :buffer) (current-buffer))
-            (or gptel--openai-oauth-session-id
-                (setq gptel--openai-oauth-session-id
-                      (md5 (format "%s%s%s" (emacs-pid) (float-time) (random))))))))
+          (or (map-nested-elt info '(:data :prompt_cache_key))
+              (with-current-buffer (or (plist-get info :buffer) (current-buffer))
+                (or gptel--openai-oauth-session-id
+                    (setq gptel--openai-oauth-session-id
+                          (md5 (format "%s%s%s" (emacs-pid) (float-time) (random)))))))))
     (append
      `(("Authorization" . ,(concat "Bearer " key))
        ("Originator" . "gptel")
