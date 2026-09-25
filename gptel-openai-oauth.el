@@ -388,11 +388,15 @@ reauthenticate as needed."
 
 ;;;; Oauth backend management
 
-(defun gptel--openai-oauth-header (_info)
+(defvar-local gptel--openai-oauth-session-id nil
+  "A unique per-conversation session ID is required for caching.")
+
+(defun gptel--openai-oauth-header (info)
   "Return authentication headers for the current OpenAI OAuth backend.
 
-_INFO is ignored.  Ensures `gptel-backend' has a valid token
-before constructing the headers."
+Ensures `gptel-backend' has a valid token before constructing the
+headers.  Use INFO's prompt cache key or a stable identifier in
+INFO's source buffer for ChatGPT cache affinity."
   (gptel--openai-oauth-ensure gptel-backend)
   (let* ((token (gptel-openai-oauth-token gptel-backend))
          (key (plist-get token :access_token))
@@ -405,7 +409,14 @@ before constructing the headers."
                         :organizations 0 :id)))))
     (append
      `(("Authorization" . ,(concat "Bearer " key))
-       ("Originator"    . "gptel"))
+       ("Originator" . "gptel")
+       ("session-id"
+        . ,(or (map-nested-elt info '(:data :prompt_cache_key))
+               (with-current-buffer (or (plist-get info :buffer) (current-buffer))
+                 (or gptel--openai-oauth-session-id
+                     (setq gptel--openai-oauth-session-id
+                           (md5 (format "%s%s%s" (emacs-pid)
+                                        (float-time) (random)))))))))
      (and account-id `(("ChatGPT-Account-Id" . ,account-id))))))
 
 ;;;###autoload
