@@ -647,6 +647,16 @@ Media files, if present, are placed in `gptel-context'."
       :input-cost 10
       :output-cost 50
       :cutoff-date "2026-01")
+     (claude-opus-5-5
+      :description "Complex agentic coding and enterprise work"
+      :capabilities (media tool-use cache)
+      ;; Opus 5.5 does not support disabling reasoning.
+      :reasoning-effort (member low medium high xhigh max)
+      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp" "application/pdf")
+      :context-window 1000
+      :input-cost 4
+      :output-cost 20
+      :cutoff-date "2026-06")
      (claude-opus-5
       :description "Complex agentic coding and enterprise work"
       :capabilities (media tool-use cache)
@@ -659,7 +669,8 @@ Media files, if present, are placed in `gptel-context'."
      (claude-opus-4-9
       :description "Most capable model for complex reasoning and advanced coding"
       :capabilities (media tool-use cache)
-      :reasoning-effort (member disabled low medium high xhigh max)
+      ;; Opus 4.9 does not support disabling reasoning.
+      :reasoning-effort (member low medium high xhigh max)
       :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp" "application/pdf")
       :context-window 1000
       :input-cost 5
