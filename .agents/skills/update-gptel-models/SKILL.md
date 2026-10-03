@@ -49,7 +49,11 @@ gpt-6-astra".
    it. Never guess for information that you are unable to find. Instead, do your
    best and let the user know what you were not able to find.
 
-3. Add the information you discovered to the gptel variable in the appropriate
+3. Check upstream PRs in the gptel repository. If they add any of the new models
+   and the information is correct, merge the relevant PRs into the corresponding
+   local model branch before proceeding.
+
+4. Add the information you discovered to the gptel variable in the appropriate
    file (e.g. gptel-openai.el for OpenAI). Make sure to follow these rules.
 
    1. The default model is the first OpenAI model in the list. This should not
@@ -58,7 +62,7 @@ gpt-6-astra".
 
    2. Models from the same series should be adjacent in the list with more
       powerful models listed first. For example, gpt-5.4-pro, gpt-5.4,
-      gpt-5.4-mini and lastly gpt-5.4-nano. The exception is rule 3.1 which
+      gpt-5.4-mini and lastly gpt-5.4-nano. The exception is rule 4.1 which
       takes priority.
 
    3. Never change older entries in the list even if you think that there are
@@ -76,16 +80,16 @@ gpt-6-astra".
    7. Update NEWS with the new models. Be sure to follow the conventions in that
       file exactly. Do not deviate or add extra information.
 
-4. Commit the branch (but do not push).
+5. Commit the branch (but do not push).
 
-5. Merge the branch into the reasoning-effort branch. Make sure not to remove
+6. Merge the branch into the reasoning-effort branch. Make sure not to remove
    existing reasoning effort information from the model definitions. Add
    reasoning effort defintions for the new models but do not change anything
    else. If merge conflicts occur other than missing reasoning effort
    information that you can easily resolve, alert the user instead of attempting
    to resolve the merge conflicts yourself.
 
-6. Commit the changes to the reasoning effort branch separately for each
+7. Commit the changes to the reasoning effort branch separately for each
    provider that had new models added.
 
 In your report to the user, give links to the webpages that you obtained the new
