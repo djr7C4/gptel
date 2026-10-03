@@ -49,9 +49,11 @@ gpt-6-astra".
    it. Never guess for information that you are unable to find. Instead, do your
    best and let the user know what you were not able to find.
 
-3. Check upstream PRs in the gptel repository. If they add any of the new models
-   and the information is correct, merge the relevant PRs into the corresponding
-   local model branch before proceeding.
+3. Check upstream pull requests in the gptel repository. If they add any of the
+   new models and the information is correct, merge the relevant PRs into the
+   corresponding local model branch before proceeding. Do not add commits
+   related to these PRs apart from the merge commits and the commits from the
+   PRs themselves.
 
 4. Add the information you discovered to the gptel variable in the appropriate
    file (e.g. gptel-openai.el for OpenAI). Make sure to follow these rules.
