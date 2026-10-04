@@ -50,10 +50,13 @@ gpt-6-astra".
    best and let the user know what you were not able to find.
 
 3. Check upstream pull requests in the gptel repository. If they add any of the
-   new models and the information is correct, merge the relevant PRs into the
-   corresponding local model branch before proceeding. Do not add commits
-   related to these PRs apart from the merge commits and the commits from the
-   PRs themselves.
+   new models and the information is correct (satisfies all the requirements of
+   steps 4 and 5), skip creating the branch for that provider and proceed to
+   step 6 but merge the PR branch instead of the provider branch. Do not add
+   commits related to these PRs apart from the merge commits and the commits
+   from the PRs themselves. If the PR does not satisfy all the requirements of
+   steps 4 and 5 then ignore the PR, create your own provider branch and proceed
+   to step 4.
 
 4. Add the information you discovered to the gptel variable in the appropriate
    file (e.g. gptel-openai.el for OpenAI). Make sure to follow these rules.
