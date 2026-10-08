@@ -63,7 +63,7 @@ gpt-6-astra".
 
    1. The default model is the first OpenAI model in the list. This should not
       be updated unless there is a newer model of similar cost. If no such model
-      exists, keep the current model. The rule takes priority over rule 3.2.
+      exists, keep the current model. The rule takes priority over rule 4.2.
 
    2. Models from the same series should be adjacent in the list with more
       powerful models listed first. For example, gpt-5.4-pro, gpt-5.4,
