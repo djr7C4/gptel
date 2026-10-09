@@ -4,8 +4,8 @@ description: Retrieve information on new models and update the gptel code
 ---
 
 Use the following process to update models for gptel. Only look for new OpenAI,
-Anthropic, Gemini and DeepSeek models. Don't worry about other providers. Apply
-the following steps for each provider in a new branch (based on master) for the
+Anthropic and Google models. Don't worry about other providers. Apply the
+following steps for each provider in a new branch (based on master) for the
 models being added for that provider. Pull updates from the upstream master
 branch before creating the new branch. The name of the new branch should be
 descriptive (e.g. openai-gpt-5.6). Don't run any tests.
@@ -22,8 +22,7 @@ gpt-6-astra".
    not found in the gptel model defintions. For OpenAI, use
    https://developers.openai.com/api/docs/models. For Anthropic, use
    https://platform.claude.com/docs/en/about-claude/models/overview. For Gemini,
-   use https://ai.google.dev/gemini-api/docs/models. For DeekSeek, use
-   off-peak pricing from https://api-docs.deepseek.com/quick_start/pricing/.
+   use https://ai.google.dev/gemini-api/docs/models.
 
    The full gptel description of a model looks like
 
@@ -42,8 +41,7 @@ gpt-6-astra".
    Reasoning effort information is available at
    https://developers.openai.com/api/docs/guides/reasoning for OpenAI,
    https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking for
-   Anthropic, https://ai.google.dev/gemini-api/docs/thinking for Gemini and
-   https://api-docs.deepseek.com/guides/thinking_mode/ for DeepSeek.
+   Anthropic, https://ai.google.dev/gemini-api/docs/thinking for Gemini.
 
    If any information is missing, perform web searches to attempt to locate
    it. Never guess for information that you are unable to find. Instead, do your
