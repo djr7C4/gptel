@@ -518,6 +518,7 @@ Media files, if present, are placed in `gptel-context'."
      (gpt-6.1-sol
       :description "Faster, more cost-efficient version of GPT-6"
       :capabilities (media tool-use json url responses-api)
+      :provider (:openai-pro-mode t)
       :reasoning-effort (member low medium high xhigh max)
       :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
       :context-window 1050
@@ -527,6 +528,7 @@ Media files, if present, are placed in `gptel-context'."
      (gpt-6-astra
       :description "The best model for coding and agentic tasks"
       :capabilities (media tool-use json url responses-api)
+      :provider (:openai-pro-mode t)
       :reasoning-effort (member low medium high xhigh max)
       :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
       :context-window 1050
@@ -536,6 +538,7 @@ Media files, if present, are placed in `gptel-context'."
      (gpt-6-sol
       :description "Faster, more cost-efficient version of GPT-6"
       :capabilities (media tool-use json url responses-api)
+      :provider (:openai-pro-mode t)
       :reasoning-effort (member none low medium high xhigh max)
       :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
       :context-window 1050
@@ -554,6 +557,7 @@ Media files, if present, are placed in `gptel-context'."
      (gpt-5.6-sol
       :description "The best model for coding and agentic tasks"
       :capabilities (media tool-use json url responses-api)
+      :provider (:openai-pro-mode t)
       :reasoning-effort (member none low medium high xhigh max)
       :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
       :context-window 1050
@@ -563,6 +567,7 @@ Media files, if present, are placed in `gptel-context'."
      (gpt-5.6-terra
       :description "Faster, more cost-efficient version of GPT-5.6"
       :capabilities (media tool-use json url responses-api)
+      :provider (:openai-pro-mode t)
       :reasoning-effort (member none low medium high xhigh max)
       :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
       :context-window 1050
@@ -572,6 +577,7 @@ Media files, if present, are placed in `gptel-context'."
      (gpt-5.6-luna
       :description "Fastest, cheapest version of GPT-5.6"
       :capabilities (media tool-use json url responses-api)
+      :provider (:openai-pro-mode t)
       :reasoning-effort (member none low medium high xhigh max)
       :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
       :context-window 1050

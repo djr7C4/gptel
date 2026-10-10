@@ -811,37 +811,37 @@ Also format the value of OBJ in the transient menu."
   :environment #'gptel--transient-fix-evil-visual
   ;; :value (list (concat "b" (buffer-name)))
   [:description gptel-system-prompt--format
-   [""
-    :if (lambda () (not (gptel--model-capable-p 'nosystem)))
-    "Instructions"
-    ("s" "Set system message" gptel-system-prompt :transient t)
-    (gptel--infix-add-directive)]
-   [:pad-keys t ""
-    (:info #'gptel--describe-infix-context
-     :face transient-heading :format "%d")
-    (gptel--infix-context-add-current-kill)
-    (gptel--infix-context-add-region)
-    (gptel--infix-context-add-buffer)
-    (gptel--infix-context-add-file)
-    (gptel--infix-context-remove-all)
-    (gptel--suffix-context-buffer)]
-   [:pad-keys t
-    :if (lambda () (and gptel-use-tools
-                   (or gptel--known-tools (featurep 'gptel-integrations))))
-    "" (:info
-        (lambda ()
-          (concat
-           "Tools" (and gptel-tools
-                        (concat " (" (propertize (format "%d selected"
-                                                         (length gptel-tools))
-                                                 'face 'warning)
-                                ")"))))
-        :format "%d" :face transient-heading)
-    ("t" "Select tools" gptel-tools :transient t)
-    ("T" "Continue tool calls"
-     (lambda () (interactive) (gptel--handle-tool-use gptel--fsm-last))
-     :if (lambda () (and gptel--fsm-last
-                    (eq (gptel-fsm-state gptel--fsm-last) 'TOOL))))]]
+                [""
+                 :if (lambda () (not (gptel--model-capable-p 'nosystem)))
+                 "Instructions"
+                 ("s" "Set system message" gptel-system-prompt :transient t)
+                 (gptel--infix-add-directive)]
+                [:pad-keys t ""
+                           (:info #'gptel--describe-infix-context
+                                  :face transient-heading :format "%d")
+                           (gptel--infix-context-add-current-kill)
+                           (gptel--infix-context-add-region)
+                           (gptel--infix-context-add-buffer)
+                           (gptel--infix-context-add-file)
+                           (gptel--infix-context-remove-all)
+                           (gptel--suffix-context-buffer)]
+                [:pad-keys t
+                           :if (lambda () (and gptel-use-tools
+                                               (or gptel--known-tools (featurep 'gptel-integrations))))
+                           "" (:info
+                               (lambda ()
+                                 (concat
+                                  "Tools" (and gptel-tools
+                                               (concat " (" (propertize (format "%d selected"
+                                                                                (length gptel-tools))
+                                                                        'face 'warning)
+                                                       ")"))))
+                               :format "%d" :face transient-heading)
+                           ("t" "Select tools" gptel-tools :transient t)
+                           ("T" "Continue tool calls"
+                            (lambda () (interactive) (gptel--handle-tool-use gptel--fsm-last))
+                            :if (lambda () (and gptel--fsm-last
+                                                (eq (gptel-fsm-state gptel--fsm-last) 'TOOL))))]]
   [[(gptel-preset
      :transient t
      :key "@" :format "%d"
@@ -854,9 +854,14 @@ Also format the value of OBJ in the transient menu."
     (gptel--infix-max-tokens)
     (gptel--infix-num-messages-to-send
      :if (lambda () (and gptel-expert-commands
-                    (or gptel-mode gptel-track-response))))
+                         (or gptel-mode gptel-track-response))))
     (gptel--infix-temperature :if (lambda () gptel-expert-commands))
     (gptel--infix-reasoning-effort :if (lambda () gptel-expert-commands))
+    (gptel--infix-openai-pro-mode :if (lambda ()
+                                        (and gptel-expert-commands
+                                             (gptel-openai-responses-p gptel-backend)
+                                             ;; Plus subscriptions do not support pro mode.
+                                             (not (gptel-openai-oauth-p gptel-backend)))))
     (gptel--infix-use-context)
     (gptel--infix-include-reasoning)
     (gptel--infix-use-tools)
@@ -890,14 +895,14 @@ Also format the value of OBJ in the transient menu."
                      (not (eq (current-buffer) buf))))))))
     ("k" "Kill-ring" "k")]]
   [[:description (lambda () (concat (and gptel--rewrite-overlays "Continue ")
-                               "Rewrite"))
-    :if (lambda () (or (use-region-p)
-                  (and gptel--rewrite-overlays
-                       (gptel--rewrite-sanitize-overlays))))
-    ("r"
-     (lambda () (if (get-char-property (point) 'gptel-rewrite)
-               "Iterate" "Rewrite"))
-     gptel-rewrite)]
+                                    "Rewrite"))
+                 :if (lambda () (or (use-region-p)
+                                    (and gptel--rewrite-overlays
+                                         (gptel--rewrite-sanitize-overlays))))
+                 ("r"
+                  (lambda () (if (get-char-property (point) 'gptel-rewrite)
+                                 "Iterate" "Rewrite"))
+                  gptel-rewrite)]
    ["Tweak Response" :if gptel--in-response-p :pad-keys t
     ("SPC" "Mark" gptel--mark-response)
     ("S-RET" "Regenerate" gptel--regenerate :if gptel--in-response-p)
@@ -1427,6 +1432,15 @@ documention.  Return nil if user does not provide a number, for default."
   :key "-e"
   :prompt "Reasoning effort controls how hard the LLM \"thinks\": "
   :reader 'gptel--transient-read-reasoning-effort)
+
+(transient-define-infix gptel--infix-openai-pro-mode ()
+  :description "Pro mode"
+  :class 'gptel--switches
+  :variable 'gptel-openai-pro-mode
+  :set-value #'gptel--set-with-scope
+  :display-if-true "Yes"
+  :display-if-false "No"
+  :key "-p")
 
 (transient-define-infix gptel--infix-track-response ()
   "Distinguish between user messages and LLM responses.
