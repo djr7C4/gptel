@@ -1164,8 +1164,8 @@ For BUF, START, END and BODY-THUNK see `gptel--with-buffer-copy'."
                       gptel-use-tools gptel-tools gptel-use-curl gptel--schema
                       gptel-use-context gptel-context gptel--num-messages-to-send
                       gptel-stream gptel-include-reasoning gptel--request-params
-                      gptel-temperature gptel-reasoning-effort gptel-max-tokens
-                      gptel-cache))
+                      gptel-temperature gptel-reasoning-effort
+                      gptel-openai-pro-mode gptel-max-tokens gptel-cache))
         (set (make-local-variable sym) (buffer-local-value sym buf)))
       (when (and start end) (insert-buffer-substring buf start end))
       (setq major-mode (buffer-local-value 'major-mode buf))

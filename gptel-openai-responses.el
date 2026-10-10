@@ -219,6 +219,12 @@ Mutate state INFO with response metadata."
     (when content-strs
       (apply #'concat (nreverse content-strs)))))
 
+(defvar gptel-openai-pro-mode nil
+  "Indicates if OpenAI's \"pro mode\" should be used.
+
+This mode enables deeper thinking independently of the level of
+`gptel-reasoning-effort' chosen.")
+
 (cl-defmethod gptel--request-data ((backend gptel-openai-responses) prompts)
   "JSON encode PROMPTS for sending to the OpenAI Responses API with BACKEND."
   (let ((prompts-plist
@@ -236,8 +242,16 @@ Mutate state INFO with response metadata."
     (when (and gptel-temperature (not o-model-p))
       (plist-put prompts-plist :temperature gptel-temperature))
     ;; Reasoning effort
-    (when-let* ((effort (gptel--reasoning-effort-normalize gptel-reasoning-effort '(none))))
-      (plist-put prompts-plist :reasoning (list :effort (symbol-name effort))))
+    (let (reasoning-params)
+      (when-let* ((effort (gptel--reasoning-effort-normalize gptel-reasoning-effort '(none))))
+        (cl-callf append reasoning-params (list :effort (symbol-name effort))))
+      (when gptel-openai-pro-mode
+        (if (plist-get (get gptel-model :provider) :openai-pro-mode)
+            (cl-callf append reasoning-params (list :mode "pro"))
+          (display-warning '(gptel openai-pro-mode)
+                           (format "Pro mode is enabled but %S does not support that." gptel-model))))
+      (when reasoning-params
+        (plist-put prompts-plist :reasoning reasoning-params)))
     ;; Max tokens
     (when gptel-max-tokens
       (plist-put prompts-plist :max_output_tokens gptel-max-tokens))
