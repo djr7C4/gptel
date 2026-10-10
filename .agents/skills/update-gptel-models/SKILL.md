@@ -74,26 +74,38 @@ gpt-6-astra".
    4. Don't include reasoning effort. This needs to be added later when these
       branches are merged into the reasoning-effort branch instead.
 
-   5. For OpenAI, also update the default models list in gptel-make-openai-oauth
+   5. Only include provider-specific settings if they appear in the :provider
+      list in the model definition for other models in the master
+      branch. Otherwise, these settings will be added later in another branch
+      such as reasoning-effort or openai-pro-mode.
+
+   6. For OpenAI, also update the default models list in gptel-make-openai-oauth
       in gptel-openai-oauth.el.
 
-   6. Do not copy descriptions from the webpages given. Instead, copy the
+   7. Do not copy descriptions from the webpages given. Instead, copy the
       closest description from another model that was previously added to gptel.
 
-   7. Update NEWS with the new models. Be sure to follow the conventions in that
+   8. Update NEWS with the new models. Be sure to follow the conventions in that
       file exactly. Do not deviate or add extra information.
 
 5. Commit the branch (but do not push).
 
 6. Merge the branch into the reasoning-effort branch. Make sure not to remove
    existing reasoning effort information from the model definitions. Add
-   reasoning effort defintions for the new models but do not change anything
-   else. If merge conflicts occur other than missing reasoning effort
-   information that you can easily resolve, alert the user instead of attempting
-   to resolve the merge conflicts yourself.
+   reasoning effort definitions for the new models but do not change anything
+   else. In the merge, also add provider specific-settings that should appear in
+   the :provider list in the model definition if applicable. Check the
+   provider's online documentation to determine the correct values. If merge
+   conflicts occur other than missing reasoning effort information that you can
+   easily resolve, alert the user instead of attempting to resolve the merge
+   conflicts yourself.
 
 7. Commit the changes to the reasoning effort branch separately for each
    provider that had new models added.
+
+8. If there were changes for any OpenAI models that support pro mode, merge
+   reasoning effort into the openai-pro-mode branch. Include the correct pro
+   mode setting in the :provider list.
 
 In your report to the user, give links to the webpages that you obtained the new
 model information from.
