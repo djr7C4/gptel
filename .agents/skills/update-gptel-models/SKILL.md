@@ -5,8 +5,8 @@ description: Retrieve information on new models and update the gptel code
 
 Use the following process to update models for gptel. Only look for new OpenAI,
 Anthropic and Google models. Don't worry about other providers. Apply the
-following steps for each provider in a new branch (based on master) for the
-models being added for that provider. Pull updates from the upstream master
+following numbered steps for each provider in a new branch (based on master) for
+the models being added for that provider. Pull updates from the upstream master
 branch before creating the new branch. The name of the new branch should be
 descriptive (e.g. openai-gpt-5.6). Don't run any tests.
 
