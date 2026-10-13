@@ -100,12 +100,15 @@ gpt-6-astra".
    easily resolve, alert the user instead of attempting to resolve the merge
    conflicts yourself.
 
-7. Commit the changes to the reasoning effort branch separately for each
+7. Commit the changes to the reasoning-effort branch separately for each
    provider that had new models added.
 
-8. If there were changes for any OpenAI models that support pro mode, merge
-   reasoning effort into the openai-pro-mode branch. Include the correct pro
-   mode setting in the :provider list.
+
+If there were changes for any OpenAI models that support pro mode, merge
+reasoning-effort into the openai-pro-mode branch. Include the correct pro mode
+setting in the :provider list when merging. When this merge into the
+openai-pro-mode branch was made, merge openai-pro-mode into dev. Otherwise,
+merge reasoning-effort into dev.
 
 In your report to the user, give links to the webpages that you obtained the new
 model information from.
