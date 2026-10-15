@@ -111,4 +111,6 @@ openai-pro-mode branch was made, merge openai-pro-mode into dev. Otherwise,
 merge reasoning-effort into dev.
 
 In your report to the user, give links to the webpages that you obtained the new
-model information from.
+model information from. Make sure that these contain complete information for
+all the models. Give multiple webpages for the same provider if necessary to
+ensure this.
