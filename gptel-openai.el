@@ -528,6 +528,7 @@ Media files, if present, are placed in `gptel-context'."
      (gpt-6.1-terra
       :description "Faster, more cost-efficient version of GPT-6.1-sol"
       :capabilities (media tool-use json url responses-api)
+      :provider (:openai-pro-mode t)
       :reasoning-effort (member none low medium high xhigh max)
       :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
       :context-window 1050
