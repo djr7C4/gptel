@@ -86,7 +86,10 @@ gpt-6-astra".
       closest description from another model that was previously added to gptel.
 
    8. Update NEWS with the new models. Be sure to follow the conventions in that
-      file exactly. Do not deviate or add extra information.
+      file exactly. Do not deviate or add extra information. When there is
+      already a line for the current gptel version for a provider do not add
+      another line for the same provider. Add the new models to the existing
+      line instead.
 
 5. Commit the branch (but do not push).
 
