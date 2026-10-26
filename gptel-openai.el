@@ -229,7 +229,7 @@ Mutate state INFO with response metadata."
     (when gptel-temperature
       (plist-put prompts-plist :temperature gptel-temperature))
     (when-let* ((effort (gptel--reasoning-effort-normalize gptel-reasoning-effort)))
-      (plist-put prompts-plist (list :reasoning_effort (symbol-name effort))))
+      (plist-put prompts-plist :reasoning_effort (symbol-name effort)))
     (when gptel-use-tools
       (when (eq gptel-use-tools 'force)
         (plist-put prompts-plist :tool_choice "required"))
@@ -525,6 +525,16 @@ Media files, if present, are placed in `gptel-context'."
       :input-cost 2
       :output-cost 10
       :cutoff-date "2026-04")
+     (gpt-6.1-terra
+      :description "Faster, more cost-efficient version of GPT-6.1-sol"
+      :capabilities (media tool-use json url responses-api)
+      :provider (:openai-pro-mode t)
+      :reasoning-effort (member none low medium high xhigh max)
+      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
+      :context-window 1050
+      :input-cost 1
+      :output-cost 5
+      :cutoff-date "2026-06")
      (gpt-6-astra
       :description "The best model for coding and agentic tasks"
       :capabilities (media tool-use json url responses-api)
