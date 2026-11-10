@@ -116,7 +116,9 @@ If there were changes for any OpenAI models that support pro mode, merge
 reasoning-effort into the openai-pro-mode branch. Include the correct pro mode
 setting in the :provider list when merging. When this merge into the
 openai-pro-mode branch was made, merge openai-pro-mode into dev. Otherwise,
-merge reasoning-effort into dev.
+merge reasoning-effort into dev. Be aware the upstream dev branch has many other
+branches which differ from upstream gptel master merged into it. Make sure that
+you do not remove any of the features added when merging into it.
 
 In your report to the user, give links to the webpages that you obtained the new
 model information from. Make sure that these contain complete information for
