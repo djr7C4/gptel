@@ -253,6 +253,7 @@ charset=utf-8\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s"
                    :host "localhost"
                    :service gptel--openai-oauth-redirect-port
                    :filter #'filter
+                   :coding 'no-conversion
                    :noquery t))
             (ignore-errors (gui-set-selection 'CLIPBOARD authorization-url))
             (message "OpenAI OAuth URL copied to clipboard.  \
