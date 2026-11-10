@@ -91,7 +91,10 @@ gpt-6-astra".
       another line for the same provider. Add the new models to the existing
       line instead.
 
-5. Commit the branch (but do not push).
+5. Commit the branch (but do not push). Unless you were instructed not to or to
+   work autonomously, ask the user to review your changes before proceeding
+   further. If the user requests changes, make them by amending the last commit
+   (or rebasing if there are multiple commits) instead of adding more commits.
 
 6. Merge the branch into the reasoning-effort branch. Make sure not to remove
    existing reasoning effort information from the model definitions. Add
