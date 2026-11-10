@@ -95,8 +95,9 @@ gpt-6-astra".
    work autonomously, ask the user to review your changes before proceeding
    further. Make sure to reference the webpages that you obtained the
    information from when asking the user. If the user requests changes, make
-   them by amending the last commit (or rebasing if there are multiple commits)
-   instead of adding more commits.
+   them by amending your last commit that added the models (or rebasing if you
+   have made multiple commits to add them) instead of adding more commits. Never
+   amend or rebase other commits unless explicitly asked to.
 
 6. Merge the branch into the reasoning-effort branch. Make sure not to remove
    existing reasoning effort information from the model definitions. Add
