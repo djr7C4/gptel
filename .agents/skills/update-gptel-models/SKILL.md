@@ -84,12 +84,15 @@ gpt-6-astra".
 
    7. Do not copy descriptions from the webpages given. Instead, copy the
       closest description from another model that was previously added to gptel.
+      If the string needs to be slightly modified to retain accuracy (e.g.
+      updating model versions) do that.
 
    8. Update NEWS with the new models. Be sure to follow the conventions in that
       file exactly. Do not deviate or add extra information. When there is
       already a line for the current gptel version for a provider do not add
       another line for the same provider. Add the new models to the existing
-      line instead.
+      line instead. Group entries version and then by model class (stronger and
+      weaker versions of a model).
 
 5. Commit the branch (but do not push). Unless you were instructed not to or to
    work autonomously, ask the user to review your changes before proceeding
