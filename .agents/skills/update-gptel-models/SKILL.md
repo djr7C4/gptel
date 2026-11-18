@@ -22,7 +22,7 @@ gpt-6-astra".
    not found in the gptel model defintions. For OpenAI, use
    https://developers.openai.com/api/docs/models. For Anthropic, use
    https://platform.claude.com/docs/en/about-claude/models/overview. For Gemini,
-   use https://ai.google.dev/gemini-api/docs/models.
+   use https://platform.claude.com/docs/en/about-claude/models/overview.
 
    The full gptel description of a model looks like
 
