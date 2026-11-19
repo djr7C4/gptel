@@ -15,7 +15,10 @@
 
 ** New models and backends
 
-- Gemini backend: Add support for =gemini-4-argon=.
+- GitHub Copilot backend: Add support for =gemini-4-argon=.
+
+- Gemini backend: Add support for =gemini-4-argon= and
+  =gemini-4-hydrogen=.
 
 - Anthropic backend: Add support for =claude-fable-5-2=,
   =claude-fable-5-1=, =claude-opus-5-5=, =claude-sonnet-5-5= and
@@ -37,6 +40,19 @@
   =grok-4.20-non-reasoning= and =grok-4.20-multi-agent=.
 
 ** New features and UI changes
+
+- The OpenAI backend now supports sending PDFs, common Microsoft Office,
+  Apple and Open Office file formats.  As before, such files can be
+  included as Org/Markdown file or web links in gptel buffers or via
+  ~gptel-add~.
+
+- The Anthropic backend now supports sending PDFs.  As before, such
+  files can be included as Org/Markdown file links in gptel buffers or
+  via ~gptel-add~.  PDFs can also be specified via web links in buffers.
+
+- The Gemini backend now supports sending files from web links in gptel
+  buffers for all supported MIME types.
+
 ** Notable bug fixes
 
 - Non UTF-8 characters or raw bytes in tool call results are replaced
