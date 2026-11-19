@@ -366,28 +366,24 @@ message."
           (endpoint "/v1/chat/completions")
           (models '((deepseek-flash
                      :capabilities (media tool-use reasoning url)
-                     :reasoning-effort (member disabled high max)
                      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
                      :context-window 1000
                      :input-cost 0.15
                      :output-cost 0.6)
                     (deepseek-v4-pro
                      :capabilities (tool-use reasoning)
-                     :reasoning-effort (member disabled high max)
                      :context-window 1000
                      :input-cost 0.66
                      :output-cost 1.98)
                     (deepseek-v4-flash
                      :description "DEPRECATED: Use deepseek-flash instead."
                      :capabilities (tool-use reasoning)
-                     :reasoning-effort (member disabled high max)
                      :context-window 1000
                      :input-cost 0.15
                      :output-cost 0.6)
                     (deepseek-v4-flash-vision-exp
                      :description "DEPRECATED: Use deepseek-flash instead."
                      :capabilities (media tool-use reasoning url)
-                     :reasoning-effort (member disabled high max)
                      :mime-types ("image/jpeg" "image/png" "image/gif" "image/webp")
                      :context-window 1000
                      :input-cost 0.15

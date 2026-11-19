@@ -482,7 +482,6 @@ fetched server-side from https URLs for models with the `url' capability.")
    `((gemini-pro-latest
       :description "Most powerful Gemini thinking model, always points to latest version"
       :capabilities (tool-use json media url)
-      :reasoning-effort (member low medium high)
       :mime-types ,gptel--gemini-media-mime-types
       :context-window 1048              ; 65536 output token limit
       :input-cost 1.25                  ; 2.50 for >200k tokens
@@ -491,7 +490,6 @@ fetched server-side from https URLs for models with the `url' capability.")
      (gemini-flash-latest
       :description "Best price / performance, always points to latest version"
       :capabilities (tool-use json media url)
-      :reasoning-effort (member low medium high)
       :mime-types ,gptel--gemini-media-mime-types
       :context-window 1048              ; 65536 output token limit
       :input-cost 0.3
@@ -499,7 +497,6 @@ fetched server-side from https URLs for models with the `url' capability.")
       :cutoff-date "2025-01")
      (gemini-flash-lite-latest
       :description "Fastest, cheapest Gemini model, always points to latest version"
-      :reasoning-effort (member minimal low medium high)
       :capabilities (tool-use json media url)
       :mime-types ,gptel--gemini-lite-media-mime-types
       :context-window 1048              ; 64000 output token limit
@@ -509,7 +506,6 @@ fetched server-side from https URLs for models with the `url' capability.")
      (gemini-4-argon
       :description "Most intelligent Gemini model with SOTA reasoning and multimodal understanding"
       :capabilities (tool-use json media url)
-      :reasoning-effort (member low medium high)
       :mime-types ,gptel--gemini-media-mime-types
       :context-window 1048              ; 65536 output token limit
       :input-cost 2.0                   ; 4.0 from 2026-12-01
@@ -526,7 +522,6 @@ fetched server-side from https URLs for models with the `url' capability.")
      (gemini-3.8-flash
       :description "Engineered for long-horizon software engineering, agents and critical reasoning"
       :capabilities (tool-use json media url)
-      :reasoning-effort (member low medium high)
       :mime-types ,gptel--gemini-media-mime-types
       :context-window 1048              ; 65536 output token limit
       :input-cost 0.75                  ; 1.50 from 2027-01-01
@@ -535,7 +530,6 @@ fetched server-side from https URLs for models with the `url' capability.")
      (gemini-3.7-flash
       :description "Next generation reasoning model with customizable thinking configurations"
       :capabilities (tool-use json media url)
-      :reasoning-effort (member low medium high)
       :mime-types ,gptel--gemini-media-mime-types
       :context-window 1048              ; 65536 output token limit
       :input-cost 0.75                  ; 1.50 from 2027-01-01
@@ -544,7 +538,6 @@ fetched server-side from https URLs for models with the `url' capability.")
      (gemini-3.6-flash
       :description "Most intelligent Gemini model built for speed, combining frontier intelligence with superior search and grounding"
       :capabilities (tool-use json media url)
-      :reasoning-effort (member minimal low medium high)
       :mime-types ,gptel--gemini-media-mime-types
       :context-window 1048
       :input-cost 0.75                  ; 1.50 from 2027-01-01
@@ -553,7 +546,6 @@ fetched server-side from https URLs for models with the `url' capability.")
      (gemini-3.5-flash
       :description "Most intelligent Gemini model for sustained frontier performance in agentic and coding tasks"
       :capabilities (tool-use json media url)
-      :reasoning-effort (member minimal low medium high)
       :mime-types ,gptel--gemini-media-mime-types
       :context-window 1048              ; 65536 output token limit
       :input-cost 1.50
@@ -562,7 +554,6 @@ fetched server-side from https URLs for models with the `url' capability.")
      (gemini-3.5-flash-lite
       :description "Most cost-efficient multimodal Gemini model, optimized for high-volume agentic tasks and simple data processing"
       :capabilities (tool-use json media url)
-      :reasoning-effort (member minimal low medium high)
       :mime-types ,gptel--gemini-media-mime-types
       :context-window 1048
       :input-cost 0.30
@@ -571,7 +562,6 @@ fetched server-side from https URLs for models with the `url' capability.")
      (gemini-3.1-pro-preview
       :description "Most intelligent Gemini model with SOTA reasoning and multimodal understanding"
       :capabilities (tool-use json media url)
-      :reasoning-effort (member low medium high)
       :mime-types ,gptel--gemini-media-mime-types
       :context-window 1048              ; 65536 output token limit
       :input-cost 2.0                   ; 4.0 for >200k tokens
@@ -588,7 +578,6 @@ fetched server-side from https URLs for models with the `url' capability.")
      (gemini-3-flash-preview
       :description "DEPRECATED: Please use gemini-3.6-flash or gemini-3.8-flash instead"
       :capabilities (tool-use json media url)
-      :reasoning-effort (member minimal low medium high)
       :mime-types ,gptel--gemini-media-mime-types
       :context-window 1048              ; 65536 output token limit
       :input-cost 0.50
@@ -597,45 +586,22 @@ fetched server-side from https URLs for models with the `url' capability.")
      (gemini-2.5-pro
       :description "Most powerful Gemini thinking model with state-of-the-art performance"
       :capabilities (tool-use json media url)
-      :reasoning-effort (or (member dynamic) (integer 128 32768))
       :mime-types ,gptel--gemini-media-mime-types
-      :context-window 1048               ; 65536 output token limit
-      :input-cost 1.25                   ; 2.50 for >200k tokens
-      :output-cost 10.00                 ; 15 for >200k tokens
-      :cutoff-date "2025-01")
-     (gemini-2.5-pro-preview-06-05
-      :description "Most powerful thinking model with state-of-the-art performance"
-      :capabilities (tool-use json media)
-      :reasoning-effort (or (member dynamic) (integer 128 32768))
-      :mime-types ("image/png" "image/jpeg" "image/webp" "image/heic" "image/heif"
-                   "application/pdf" "text/plain" "text/csv" "text/html")
-      :context-window 1048               ; 65536 output token limit
-      :input-cost 1.25                   ; 2.50 for >200k tokens
-      :output-cost 10.00                 ; 15 for >200k tokens
+      :context-window 1048              ; 65536 output token limit
+      :input-cost 1.25                  ; 2.50 for >200k tokens
+      :output-cost 10.00                ; 15 for >200k tokens
       :cutoff-date "2025-01")
      (gemini-2.5-flash
       :description "Best in terms of price-performance, with well-rounded capabilities"
       :capabilities (tool-use json media url)
-      :reasoning-effort (or (member dynamic) (integer 0 24576))
       :mime-types ,gptel--gemini-media-mime-types
       :context-window 1048              ; 65536 output token limit
       :input-cost 0.3
       :output-cost 2.50
       :cutoff-date "2025-01")
-     (gemini-2.5-flash-preview-09-2025
-      :description "DEPRECATED: Please use gemini-2.5-flash instead"
-      :capabilities (tool-use json media)
-      :reasoning-effort (or (member dynamic) (integer 0 24576))
-      :mime-types ("image/png" "image/jpeg" "image/webp" "image/heic" "image/heif"
-                   "application/pdf" "text/plain" "text/csv" "text/html")
-      :context-window 1048               ; 65536 output token limit
-      :input-cost 0.15
-      :output-cost 0.60                  ; 3.50 for thinking
-      :cutoff-date "2025-01")
      (gemini-2.5-flash-lite
       :description "Fastest & cheapest 2.5 model, for high-volume, latency-sensitive tasks"
       :capabilities (tool-use json media url)
-      :reasoning-effort (or (member dynamic) (integer 0 0) (integer 512 24576))
       :mime-types ,gptel--gemini-lite-media-mime-types
       :context-window 1048              ; 64000 output token limit
       :input-cost 0.10
